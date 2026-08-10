@@ -17,7 +17,7 @@
     pitchEnv = EnvGen.kr(Env(
         [frequency * 6, frequency * 0.5, frequency * 1.7, frequency],
         [0.003, 0.015, decay],
-        curves: [-12, 8, -5]
+        curve: [-12, 8, -5]
     ));
 
     pulse = Pulse.ar(pitchEnv, pulseWidth.clip(0.05, 0.95));

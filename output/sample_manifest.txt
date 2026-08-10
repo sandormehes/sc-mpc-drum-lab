@@ -1,208 +1,188 @@
 SC MPC DRUM LAB
-Generated: Thu Jul 23 21:54:20 2026
+Generated: Mon Aug 10 20:41:00 2026
 Seed: 26071986
 
-XKICK_103d.wav | experimentalKick | ('sampleRateReduction': 27063.872011464, 'decay': 0.33500527185555, 'amp': 0.72, 'pitchAmount': 5.8506869077682, 
-  'clickAmount': 0.18658560037613, 'combDecay': 0.11269563436508, 'drive': 2.8622088193893, 'pitchBounce': 0.21220833063126, 'foldAmount': 0.052621042728424, 
-  'clickTone': 5931.8513655364, 'bits': 8, 'fmAmount': 0.30821733474731, 'combAmount': 0.1552704334259, 'frequency': 70.942544232577, 
-  'combTime': 0.014666701578119, 'fmRatio': 2.1712586402893)
-XKICK_203d.wav | experimentalKick | ('sampleRateReduction': 5128.1489615765, 'decay': 0.50195599075747, 'amp': 0.72, 'pitchAmount': 3.2036150693893, 
-  'clickAmount': 0.29103353381157, 'combDecay': 0.28646445989609, 'drive': 1.1742096424103, 'pitchBounce': 0.392813372612, 'foldAmount': 0.28458423614502, 
-  'clickTone': 3973.3952985188, 'bits': 5, 'fmAmount': 0.16279020309448, 'combAmount': 0.022780227661133, 'frequency': 47.355219747438, 
-  'combTime': 0.0122831062221, 'fmRatio': 2.0487675189972)
-XKICK_303d.wav | experimentalKick | ('sampleRateReduction': 5958.2289309635, 'decay': 0.2735857251235, 'amp': 0.72, 'pitchAmount': 3.6451227664948, 
-  'clickAmount': 0.18263009667397, 'combDecay': 0.054884014129639, 'drive': 3.164892244339, 'pitchBounce': 0.35104343891144, 'foldAmount': 0.21726186275482, 
-  'clickTone': 9656.5931100768, 'bits': 5, 'fmAmount': 0.13521146774292, 'combAmount': 0.080678462982178, 'frequency': 39.766607598164, 
-  'combTime': 0.011651183418671, 'fmRatio': 2.6782292246819)
-XKICK_403d.wav | experimentalKick | ('sampleRateReduction': 16711.862686186, 'decay': 0.49151739916615, 'amp': 0.72, 'pitchAmount': 3.8070337176323, 
-  'clickAmount': 0.17728199005127, 'combDecay': 0.10108602523804, 'drive': 1.4179240703583, 'pitchBounce': 0.10660825967789, 'foldAmount': 0.26586302518845, 
-  'clickTone': 8450.4489023581, 'bits': 12, 'fmAmount': 0.66823377609253, 'combAmount': 0.05709912776947, 'frequency': 64.921905525929, 
-  'combTime': 0.0058546207783459, 'fmRatio': 1.7316735506058)
-XKICK_503d.wav | experimentalKick | ('sampleRateReduction': 10199.064489031, 'decay': 0.31167080422935, 'amp': 0.72, 'pitchAmount': 3.4529806375504, 
-  'clickAmount': 0.17841086387634, 'combDecay': 0.105987637043, 'drive': 2.210165643692, 'pitchBounce': 0.27611743211746, 'foldAmount': 0.1411837220192, 
-  'clickTone': 6234.9268456111, 'bits': 12, 'fmAmount': 0.42654542922974, 'combAmount': 0.053023719787598, 'frequency': 55.824778135044, 
-  'combTime': 0.0068870959657869, 'fmRatio': 2.2519936680794)
-XKICK_603d.wav | experimentalKick | ('sampleRateReduction': 10886.235638484, 'decay': 0.52484720768022, 'amp': 0.72, 'pitchAmount': 8.5903499126434, 
-  'clickAmount': 0.25451897382736, 'combDecay': 0.12175939321518, 'drive': 1.9497302770615, 'pitchBounce': 0.41988952159882, 'foldAmount': 0.045628488063812, 
-  'clickTone': 7324.4427666706, 'bits': 8, 'fmAmount': 0.039960765838623, 'combAmount': 0.015338063240051, 'frequency': 39.001359073448, 
-  'combTime': 0.012920523100577, 'fmRatio': 2.4157546877861)
-XKICK_703d.wav | experimentalKick | ('sampleRateReduction': 4947.7422474966, 'decay': 0.40715878079601, 'amp': 0.72, 'pitchAmount': 2.6865305900574, 
-  'clickAmount': 0.13422644495964, 'combDecay': 0.12042619943619, 'drive': 2.3997547626495, 'pitchBounce': 0.25270158648491, 'foldAmount': 0.038437521457672, 
-  'clickTone': 4413.7400437666, 'bits': 6, 'fmAmount': 0.47357969284058, 'combAmount': 0.16488370895386, 'frequency': 58.075216834973, 
-  'combTime': 0.0043302267282783, 'fmRatio': 1.624565076828)
-XKICK_803d.wav | experimentalKick | ('sampleRateReduction': 18499.481848798, 'decay': 0.86864681146225, 'amp': 0.72, 'pitchAmount': 8.0081740617752, 
-  'clickAmount': 0.15681926369667, 'combDecay': 0.048705742359161, 'drive': 1.4667538166046, 'pitchBounce': 0.13711929917336, 'foldAmount': 0.052239525318146, 
-  'clickTone': 10901.988315158, 'bits': 6, 'fmAmount': 0.1100549697876, 'combAmount': 0.1055091381073, 'frequency': 48.473547818894, 
-  'combTime': 0.003833919039215, 'fmRatio': 2.3499593853951)
-XKICK_903d.wav | experimentalKick | ('sampleRateReduction': 38122.097581832, 'decay': 0.72448347008643, 'amp': 0.72, 'pitchAmount': 6.9641759991646, 
-  'clickAmount': 0.065719665288925, 'combDecay': 0.1976429271698, 'drive': 2.7478574991226, 'pitchBounce': 0.44442540407181, 'foldAmount': 0.080873715877533, 
-  'clickTone': 4188.4083550479, 'bits': 14, 'fmAmount': 0.29433784484863, 'combAmount': 0.0079450607299805, 'frequency': 48.186712431516, 
-  'combTime': 0.0038123235185899, 'fmRatio': 1.9052088975906)
-XKICK_1003d.wav | experimentalKick | ('sampleRateReduction': 8847.4314993696, 'decay': 0.85803792223083, 'amp': 0.72, 'pitchAmount': 2.5076463222504, 
-  'clickAmount': 0.1721410036087, 'combDecay': 0.20550438165665, 'drive': 1.1188556432724, 'pitchBounce': 0.092934733629227, 'foldAmount': 0.015378928184509, 
-  'clickTone': 4811.3420061027, 'bits': 12, 'fmAmount': 0.50934028625488, 'combAmount': 0.047582650184631, 'frequency': 39.902203154369, 
-  'combTime': 0.0018048556553423, 'fmRatio': 2.4792484760284)
-XKICK_1103d.wav | experimentalKick | ('sampleRateReduction': 8226.7434762516, 'decay': 0.59336522209305, 'amp': 0.72, 'pitchAmount': 4.5770326256752, 
-  'clickAmount': 0.32520612120628, 'combDecay': 0.2457007598877, 'drive': 1.100932765007, 'pitchBounce': 0.37177391052246, 'foldAmount': 0.07964780330658, 
-  'clickTone': 6789.737396206, 'bits': 5, 'fmAmount': 0.37489595413208, 'combAmount': 0.09750235080719, 'frequency': 59.863851540216, 
-  'combTime': 0.0043398377904726, 'fmRatio': 2.2926486253738)
-XKICK_1203d.wav | experimentalKick | ('sampleRateReduction': 23201.08592468, 'decay': 0.28915503151237, 'amp': 0.72, 'pitchAmount': 5.0618619918823, 
-  'clickAmount': 0.31958732247353, 'combDecay': 0.19967396020889, 'drive': 2.4221580982208, 'pitchBounce': 0.315639513731, 'foldAmount': 0.019390940666199, 
-  'clickTone': 3322.6816999769, 'bits': 8, 'fmAmount': 0.39952230453491, 'combAmount': 0.009063458442688, 'frequency': 64.002646166036, 
-  'combTime': 0.0072163705180492, 'fmRatio': 2.0895562291145)
-XSNARE_103d.wav | experimentalSnare | ('noiseWidth': 0.73529472351074, 'fmRatio': 1.4704236149788, 'foldAmount': 0.29552933573723, 'amp': 0.68, 
-  'noiseAmount': 0.73697387576103, 'noiseTone': 5670.2428138725, 'fmAmount': 0.059704828262329, 'ringAmount': 0.011413395404816, 'combTime': 0.0048897771094583, 
-  'decay': 0.12975497435227, 'combDecay': 0.14306403160095, 'ringRatio': 1.9270812988281, 'sampleRateReduction': 22275.330545582, 'drive': 2.5604120492935, 
-  'bits': 8, 'frequency': 188.08807230398, 'combAmount': 0.23729528188705, 'bodyAmount': 0.38234539031982)
-XSNARE_203d.wav | experimentalSnare | ('noiseWidth': 0.60498819351196, 'fmRatio': 1.1554246664047, 'foldAmount': 0.11865612864494, 'amp': 0.68, 
-  'noiseAmount': 0.8125476360321, 'noiseTone': 5101.6996288998, 'fmAmount': 0.28350763320923, 'ringAmount': 0.33379554748535, 'combTime': 0.0041713439288513, 
-  'decay': 0.47755325896267, 'combDecay': 0.26982299804688, 'ringRatio': 3.4740993499756, 'sampleRateReduction': 25528.21965079, 'drive': 2.8121394515038, 
-  'bits': 6, 'frequency': 250.10179482533, 'combAmount': 0.093869626522064, 'bodyAmount': 0.37951061725616)
-XSNARE_303d.wav | experimentalSnare | ('noiseWidth': 0.15262880325317, 'fmRatio': 2.9972748160362, 'foldAmount': 0.072863191366196, 'amp': 0.68, 
-  'noiseAmount': 0.36060171723366, 'noiseTone': 3062.8714421017, 'fmAmount': 0.83252692222595, 'ringAmount': 0.073644578456879, 'combTime': 0.0042672314828505, 
-  'decay': 0.1937849390213, 'combDecay': 0.20062961578369, 'ringRatio': 2.1728927612305, 'sampleRateReduction': 18015.294662909, 'drive': 1.6063008308411, 
-  'bits': 14, 'frequency': 138.55512097804, 'combAmount': 0.056759297847748, 'bodyAmount': 0.58591725826263)
-XSNARE_403d.wav | experimentalSnare | ('noiseWidth': 0.84276437759399, 'fmRatio': 1.2308812499046, 'foldAmount': 0.34592697620392, 'amp': 0.68, 
-  'noiseAmount': 0.61842953562737, 'noiseTone': 2686.1278422045, 'fmAmount': 0.45050954818726, 'ringAmount': 0.052669703960419, 'combTime': 0.0041383226043388, 
-  'decay': 0.62397384387664, 'combDecay': 0.16827004432678, 'ringRatio': 3.5161655426025, 'sampleRateReduction': 5106.7051147935, 'drive': 2.286692917347, 
-  'bits': 10, 'frequency': 147.9372749536, 'combAmount': 0.23129081726074, 'bodyAmount': 0.31163864135742)
-XSNARE_503d.wav | experimentalSnare | ('noiseWidth': 0.42819843292236, 'fmRatio': 3.09021961689, 'foldAmount': 0.14530764818192, 'amp': 0.68, 
-  'noiseAmount': 0.6660581111908, 'noiseTone': 2368.7289195525, 'fmAmount': 0.73338947296143, 'ringAmount': 0.22479921579361, 'combTime': 0.0039031813420069, 
-  'decay': 0.20018468605837, 'combDecay': 0.09884617805481, 'ringRatio': 2.1073246002197, 'sampleRateReduction': 16017.615990934, 'drive': 2.8073791265488, 
-  'bits': 7, 'frequency': 188.18025680475, 'combAmount': 0.18933734893799, 'bodyAmount': 0.70505926609039)
-XSNARE_603d.wav | experimentalSnare | ('noiseWidth': 0.58742704391479, 'fmRatio': 2.0136618494987, 'foldAmount': 0.12988936305046, 'amp': 0.68, 
-  'noiseAmount': 0.74305257797241, 'noiseTone': 6419.3460475791, 'fmAmount': 0.73618311882019, 'ringAmount': 0.45334851741791, 'combTime': 0.0051434864229632, 
-  'decay': 0.43546990706091, 'combDecay': 0.24732494354248, 'ringRatio': 1.8513160705566, 'sampleRateReduction': 15801.937817487, 'drive': 1.5632185935974, 
-  'bits': 14, 'frequency': 156.07121095643, 'combAmount': 0.090041756629944, 'bodyAmount': 0.4652569770813)
-XSNARE_703d.wav | experimentalSnare | ('noiseWidth': 0.55298013687134, 'fmRatio': 2.8816014409065, 'foldAmount': 0.32637329101562, 'amp': 0.68, 
-  'noiseAmount': 0.4908739566803, 'noiseTone': 5178.4269384202, 'fmAmount': 0.32651138305664, 'ringAmount': 0.31181401014328, 'combTime': 0.0010540261760984, 
-  'decay': 0.39801153574912, 'combDecay': 0.23900394439697, 'ringRatio': 1.5444633483887, 'sampleRateReduction': 4542.7968433138, 'drive': 1.2194514870644, 
-  'bits': 10, 'frequency': 133.37639973325, 'combAmount': 0.1983104467392, 'bodyAmount': 0.71678509712219)
-XSNARE_803d.wav | experimentalSnare | ('noiseWidth': 0.15048847198486, 'fmRatio': 2.0301957726479, 'foldAmount': 0.24532245397568, 'amp': 0.68, 
-  'noiseAmount': 0.64579620957375, 'noiseTone': 6969.8347720446, 'fmAmount': 1.1906068325043, 'ringAmount': 0.05895060300827, 'combTime': 0.007877587903398, 
-  'decay': 0.55870642613155, 'combDecay': 0.13150172233582, 'ringRatio': 1.6924510955811, 'sampleRateReduction': 42638.397727054, 'drive': 3.1178388595581, 
-  'bits': 9, 'frequency': 123.40000298507, 'combAmount': 0.071505510807037, 'bodyAmount': 0.67463736534119)
-XSNARE_903d.wav | experimentalSnare | ('noiseWidth': 0.62439908981323, 'fmRatio': 2.1584544658661, 'foldAmount': 0.058046972751617, 'amp': 0.68, 
-  'noiseAmount': 0.50011850595474, 'noiseTone': 4239.2575496717, 'fmAmount': 0.28498363494873, 'ringAmount': 0.07704371213913, 'combTime': 0.0019864770893386, 
-  'decay': 0.14998214199379, 'combDecay': 0.09591591835022, 'ringRatio': 2.2986824035645, 'sampleRateReduction': 4162.9226866061, 'drive': 1.4067581892014, 
-  'bits': 7, 'frequency': 250.50082353852, 'combAmount': 0.05625786781311, 'bodyAmount': 0.41270942687988)
-XSNARE_1003d.wav | experimentalSnare | ('noiseWidth': 0.87224769592285, 'fmRatio': 1.488996052742, 'foldAmount': 0.049638485908508, 'amp': 0.68, 
-  'noiseAmount': 0.39222547411919, 'noiseTone': 5837.6384931207, 'fmAmount': 1.0947474002838, 'ringAmount': 0.35812479257584, 'combTime': 0.0025541307476077, 
-  'decay': 0.15491118119962, 'combDecay': 0.15314129829407, 'ringRatio': 2.5851821899414, 'sampleRateReduction': 28171.496523407, 'drive': 1.6869906187057, 
-  'bits': 12, 'frequency': 118.80712469148, 'combAmount': 0.15266733169556, 'bodyAmount': 0.15293841362)
-XSNARE_1103d.wav | experimentalSnare | ('noiseWidth': 0.57870464324951, 'fmRatio': 2.5214447498322, 'foldAmount': 0.06154893040657, 'amp': 0.68, 
-  'noiseAmount': 0.90833463668823, 'noiseTone': 7410.6487473028, 'fmAmount': 0.3392970085144, 'ringAmount': 0.41157162189484, 'combTime': 0.0017340915377409, 
-  'decay': 0.3219315415967, 'combDecay': 0.11248982429504, 'ringRatio': 2.5629257202148, 'sampleRateReduction': 16887.136660791, 'drive': 2.2124195694923, 
-  'bits': 12, 'frequency': 245.89910685171, 'combAmount': 0.10669255256653, 'bodyAmount': 0.15532329082489)
-XSNARE_1203d.wav | experimentalSnare | ('noiseWidth': 0.52612266540527, 'fmRatio': 2.9827148199081, 'foldAmount': 0.24815846681595, 'amp': 0.68, 
-  'noiseAmount': 0.40132489204407, 'noiseTone': 3595.9856646111, 'fmAmount': 0.86292414665222, 'ringAmount': 0.29578667879105, 'combTime': 0.0039477079766551, 
-  'decay': 0.34106769156541, 'combDecay': 0.12373175621033, 'ringRatio': 3.4024887084961, 'sampleRateReduction': 24341.817769403, 'drive': 1.9067702293396, 
-  'bits': 7, 'frequency': 264.41510421988, 'combAmount': 0.086582028865814, 'bodyAmount': 0.1796094417572)
-METAL_103d.wav | metalPerc | ('foldAmount': 0.21488971710205, 'exciterAmount': 0.32442874908447, 'combDecay': 0.54792194366455, 'sampleRateReduction': 11132.780156948, 
-  'combAmount': 0.10037770271301, 'amp': 0.62, 'inharmonicity': 0.097877085208893, 'drive': 1.0812757015228, 'decay': 0.39737673545581, 
-  'resonance': 0.30898898124695, 'fmAmount': 0.26063418388367, 'frequency': 176.03165300502, 'bits': 14)
-METAL_203d.wav | metalPerc | ('foldAmount': 0.1618531703949, 'exciterAmount': 0.46073694229126, 'combDecay': 0.092168498039246, 'sampleRateReduction': 18850.705324786, 
-  'combAmount': 0.21674060821533, 'amp': 0.62, 'inharmonicity': 0.91677963733673, 'drive': 1.1771245002747, 'decay': 0.12336790619257, 
-  'resonance': 0.31238590240479, 'fmAmount': 1.2143888473511, 'frequency': 87.98639064392, 'bits': 7)
-METAL_303d.wav | metalPerc | ('foldAmount': 0.23852219581604, 'exciterAmount': 0.47815704345703, 'combDecay': 0.40840541124344, 'sampleRateReduction': 2701.2699556899, 
-  'combAmount': 0.33213872909546, 'amp': 0.62, 'inharmonicity': 1.3579538464546, 'drive': 2.9269745349884, 'decay': 0.12315611647357, 
-  'resonance': 0.36820322990417, 'fmAmount': 1.6223537921906, 'frequency': 175.36644066202, 'bits': 6)
-METAL_403d.wav | metalPerc | ('foldAmount': 0.25430903434753, 'exciterAmount': 0.79071140289307, 'combDecay': 0.20295624732971, 'sampleRateReduction': 25094.254669715, 
-  'combAmount': 0.35413150787354, 'amp': 0.62, 'inharmonicity': 1.5023332834244, 'drive': 1.4314692020416, 'decay': 0.13461438444333, 
-  'resonance': 0.30124190330505, 'fmAmount': 0.95455861091614, 'frequency': 79.741945563831, 'bits': 12)
-METAL_503d.wav | metalPerc | ('foldAmount': 0.35062837600708, 'exciterAmount': 0.58014135360718, 'combDecay': 0.41096316576004, 'sampleRateReduction': 37420.650513855, 
-  'combAmount': 0.27347302436829, 'amp': 0.62, 'inharmonicity': 0.7162219285965, 'drive': 2.4302425384521, 'decay': 0.121663759264, 
-  'resonance': 0.65019360542297, 'fmAmount': 1.5654246807098, 'frequency': 118.39070761071, 'bits': 16)
-METAL_603d.wav | metalPerc | ('foldAmount': 0.099435472488403, 'exciterAmount': 0.47833194732666, 'combDecay': 0.23133389949799, 'sampleRateReduction': 4119.7625115505, 
-  'combAmount': 0.058565473556519, 'amp': 0.62, 'inharmonicity': 0.82666009664536, 'drive': 2.3917953968048, 'decay': 0.15171208355742, 
-  'resonance': 0.43802683830261, 'fmAmount': 0.2261221408844, 'frequency': 459.6453180801, 'bits': 8)
-METAL_703d.wav | metalPerc | ('foldAmount': 0.37054591178894, 'exciterAmount': 0.57083349227905, 'combDecay': 0.3514954328537, 'sampleRateReduction': 3899.3527143582, 
-  'combAmount': 0.25735898017883, 'amp': 0.62, 'inharmonicity': 1.0587686300278, 'drive': 2.8850009441376, 'decay': 0.78738434845165, 
-  'resonance': 0.42996441841125, 'fmAmount': 1.0628428459167, 'frequency': 78.847804136667, 'bits': 14)
-METAL_803d.wav | metalPerc | ('foldAmount': 0.27646007537842, 'exciterAmount': 0.13762912750244, 'combDecay': 0.13447915315628, 'sampleRateReduction': 3686.8449883368, 
-  'combAmount': 0.24352402687073, 'amp': 0.62, 'inharmonicity': 1.4398121833801, 'drive': 1.96693110466, 'decay': 0.40086441632664, 
-  'resonance': 0.43990996360779, 'fmAmount': 0.49021148681641, 'frequency': 197.37328413409, 'bits': 9)
-METAL_903d.wav | metalPerc | ('foldAmount': 0.075099182128906, 'exciterAmount': 0.76169004440308, 'combDecay': 0.095768976211548, 'sampleRateReduction': 5980.1203944889, 
-  'combAmount': 0.19932465553284, 'amp': 0.62, 'inharmonicity': 0.16257971525192, 'drive': 2.3887450695038, 'decay': 0.27453674096889, 
-  'resonance': 0.66180435180664, 'fmAmount': 1.8597633838654, 'frequency': 509.36740760305, 'bits': 7)
-METAL_1003d.wav | metalPerc | ('foldAmount': 0.37968859672546, 'exciterAmount': 0.33405714035034, 'combDecay': 0.49644582271576, 'sampleRateReduction': 5638.9290181693, 
-  'combAmount': 0.19656329154968, 'amp': 0.62, 'inharmonicity': 1.7057481408119, 'drive': 2.9987924098969, 'decay': 0.14442235681235, 
-  'resonance': 0.28264625549316, 'fmAmount': 1.5473093986511, 'frequency': 573.17860017689, 'bits': 7)
-METAL_1103d.wav | metalPerc | ('foldAmount': 0.2426812171936, 'exciterAmount': 0.45579309463501, 'combDecay': 0.40409593582153, 'sampleRateReduction': 4987.4095144228, 
-  'combAmount': 0.12854323387146, 'amp': 0.62, 'inharmonicity': 0.88417679071426, 'drive': 1.1956207752228, 'decay': 0.34195829829729, 
-  'resonance': 0.56017231941223, 'fmAmount': 0.20830655097961, 'frequency': 447.93109345898, 'bits': 7)
-METAL_1203d.wav | metalPerc | ('foldAmount': 0.046521472930908, 'exciterAmount': 0.88940467834473, 'combDecay': 0.54009454250336, 'sampleRateReduction': 15190.49655882, 
-  'combAmount': 0.33166518211365, 'amp': 0.62, 'inharmonicity': 0.69595485925674, 'drive': 1.9640831947327, 'decay': 0.27137057286515, 
-  'resonance': 0.083369884490967, 'fmAmount': 1.2885036468506, 'frequency': 291.88807597478, 'bits': 10)
-GLITCH_103d.wav | glitchPerc | ('noiseAmount': 0.0028165698051453, 'drive': 1.8395452976227, 'ringRatio': 2.7773386240005, 'bits': 3, 
-  'chaosAmount': 0.77069789171219, 'frequency': 694.12155477383, 'foldAmount': 0.44293941855431, 'amp': 0.58, 'combTime': 0.0023628595739303, 
-  'pulseWidth': 0.15375021934509, 'combAmount': 0.37076063156128, 'decay': 0.27509873933417, 'combDecay': 0.30288238167763, 'sampleRateReduction': 5670.7630940089)
-GLITCH_203d.wav | glitchPerc | ('noiseAmount': 0.073131096363068, 'drive': 3.3138053894043, 'ringRatio': 2.566322696209, 'bits': 6, 
-  'chaosAmount': 0.69821591377258, 'frequency': 142.0800488729, 'foldAmount': 0.37897409796715, 'amp': 0.58, 'combTime': 0.011414106747324, 
-  'pulseWidth': 0.21847519874573, 'combAmount': 0.30563364028931, 'decay': 0.20938952936506, 'combDecay': 0.1420386326313, 'sampleRateReduction': 4722.9335497401)
-GLITCH_303d.wav | glitchPerc | ('noiseAmount': 0.22393628358841, 'drive': 1.1061749219894, 'ringRatio': 1.2070766329765, 'bits': 4, 
-  'chaosAmount': 0.22827755212784, 'frequency': 130.16595324043, 'foldAmount': 0.29715179204941, 'amp': 0.58, 'combTime': 0.0053700438087295, 
-  'pulseWidth': 0.68215974330902, 'combAmount': 0.38498210906982, 'decay': 0.079647421776551, 'combDecay': 0.20370124101639, 'sampleRateReduction': 2967.032913278)
-GLITCH_403d.wav | glitchPerc | ('noiseAmount': 0.2725395321846, 'drive': 1.7131756305695, 'ringRatio': 3.1931384444237, 'bits': 7, 
-  'chaosAmount': 0.6888463139534, 'frequency': 260.73013027753, 'foldAmount': 0.40445758700371, 'amp': 0.58, 'combTime': 0.0025251704115754, 
-  'pulseWidth': 0.276906042099, 'combAmount': 0.25360007286072, 'decay': 0.16871319500124, 'combDecay': 0.31629956007004, 'sampleRateReduction': 3187.8876920659)
-GLITCH_503d.wav | glitchPerc | ('noiseAmount': 0.0658083319664, 'drive': 2.6509478807449, 'ringRatio': 5.1006055831909, 'bits': 7, 
-  'chaosAmount': 0.77343159914017, 'frequency': 235.75011677537, 'foldAmount': 0.23478909134865, 'amp': 0.58, 'combTime': 0.011541306760799, 
-  'pulseWidth': 0.56216100215912, 'combAmount': 0.073021459579468, 'decay': 0.088699739473737, 'combDecay': 0.27438284158707, 'sampleRateReduction': 10099.515837907)
-GLITCH_603d.wav | glitchPerc | ('noiseAmount': 0.11087086200714, 'drive': 4.2353574752808, 'ringRatio': 1.1776361227036, 'bits': 9, 
-  'chaosAmount': 0.74563854932785, 'frequency': 72.399667786387, 'foldAmount': 0.44951431751251, 'amp': 0.58, 'combTime': 0.00090358625870368, 
-  'pulseWidth': 0.18551609992981, 'combAmount': 0.27346687316895, 'decay': 0.39968083636784, 'combDecay': 0.19379818201065, 'sampleRateReduction': 1699.4968113725)
-GLITCH_703d.wav | glitchPerc | ('noiseAmount': 0.52101768255234, 'drive': 2.8258617162704, 'ringRatio': 1.9537823915482, 'bits': 10, 
-  'chaosAmount': 0.66423608064651, 'frequency': 86.826482801846, 'foldAmount': 0.23906265497208, 'amp': 0.58, 'combTime': 0.0016944228519773, 
-  'pulseWidth': 0.1586691904068, 'combAmount': 0.36185078620911, 'decay': 0.079893070255212, 'combDecay': 0.085397144556046, 'sampleRateReduction': 6401.3547233095)
-GLITCH_803d.wav | glitchPerc | ('noiseAmount': 0.42642005681992, 'drive': 3.0072471618652, 'ringRatio': 3.0420275092125, 'bits': 9, 
-  'chaosAmount': 0.13967732191086, 'frequency': 66.948764359191, 'foldAmount': 0.50247372984886, 'amp': 0.58, 'combTime': 0.0043398381672968, 
-  'pulseWidth': 0.16467633724213, 'combAmount': 0.01265172958374, 'decay': 0.32426250130842, 'combDecay': 0.28131886959076, 'sampleRateReduction': 1172.8217199485)
-GLITCH_903d.wav | glitchPerc | ('noiseAmount': 0.60772018432617, 'drive': 2.1567064762115, 'ringRatio': 5.73086591959, 'bits': 4, 
-  'chaosAmount': 0.21229920387268, 'frequency': 184.13947539586, 'foldAmount': 0.25716506242752, 'amp': 0.58, 'combTime': 0.010743199835771, 
-  'pulseWidth': 0.36095122337341, 'combAmount': 0.10293169021606, 'decay': 0.45166328816475, 'combDecay': 0.31504122138023, 'sampleRateReduction': 1587.0292529547)
-GLITCH_1003d.wav | glitchPerc | ('noiseAmount': 0.43788293600082, 'drive': 1.4303873062134, 'ringRatio': 3.1323397397995, 'bits': 4, 
-  'chaosAmount': 0.86683641672134, 'frequency': 58.443207041867, 'foldAmount': 0.74759500026703, 'amp': 0.58, 'combTime': 0.001816133970905, 
-  'pulseWidth': 0.21252042293549, 'combAmount': 0.34941110610962, 'decay': 0.2028190524269, 'combDecay': 0.29427058815956, 'sampleRateReduction': 867.10974744656)
-GLITCH_1103d.wav | glitchPerc | ('noiseAmount': 0.0007632851600647, 'drive': 2.5512732505798, 'ringRatio': 2.7592745423317, 'bits': 9, 
-  'chaosAmount': 0.59959881305695, 'frequency': 120.96920407488, 'foldAmount': 0.2638494849205, 'amp': 0.58, 'combTime': 0.0019901016927461, 
-  'pulseWidth': 0.86178174495697, 'combAmount': 0.14298186302185, 'decay': 0.062872942051298, 'combDecay': 0.30962112426758, 'sampleRateReduction': 2911.108300843)
-GLITCH_1203d.wav | glitchPerc | ('noiseAmount': 0.45141762495041, 'drive': 4.2528114080429, 'ringRatio': 2.6066390395164, 'bits': 10, 
-  'chaosAmount': 0.22228206396103, 'frequency': 58.416640562334, 'foldAmount': 0.23249660730362, 'amp': 0.58, 'combTime': 0.002610061789628, 
-  'pulseWidth': 0.31494072437286, 'combAmount': 0.1608115196228, 'decay': 0.099284420424816, 'combDecay': 0.2877698469162, 'sampleRateReduction': 3198.8188987712)
-RESON_103d.wav | resonatorPerc | ('foldAmount': 0.14575108885765, 'brightness': 0.064526879787445, 'drive': 2.4110219717026, 'bits': 5, 
-  'combAmount': 0.054116058349609, 'sampleRateReduction': 16073.143721649, 'noiseAmount': 0.46440504789352, 'resonance': 0.49664104938507, 'frequency': 297.88480368042, 
-  'decay': 0.79254412523157, 'amp': 0.62, 'spread': -0.11594743728638)
-RESON_203d.wav | resonatorPerc | ('foldAmount': 0.16322392225266, 'brightness': 0.82103775143623, 'drive': 1.501834654808, 'bits': 6, 
-  'combAmount': 0.13338034749031, 'sampleRateReduction': 30099.840386723, 'noiseAmount': 0.42470701336861, 'resonance': 0.78400538921356, 'frequency': 406.67465033436, 
-  'decay': 1.3938496459344, 'amp': 0.62, 'spread': 0.59541373252869)
-RESON_303d.wav | resonatorPerc | ('foldAmount': 0.15679481625557, 'brightness': 0.40971677303314, 'drive': 1.8965858697891, 'bits': 5, 
-  'combAmount': 0.15248492360115, 'sampleRateReduction': 4182.8870729293, 'noiseAmount': 0.39886223077774, 'resonance': 0.13938019752502, 'frequency': 350.01812342105, 
-  'decay': 0.30375811777386, 'amp': 0.62, 'spread': -0.17817063331604)
-RESON_403d.wav | resonatorPerc | ('foldAmount': 0.088659584522247, 'brightness': 0.75050672292709, 'drive': 1.8900635957718, 'bits': 12, 
-  'combAmount': 0.25945370197296, 'sampleRateReduction': 8032.9953962921, 'noiseAmount': 0.1938250541687, 'resonance': 0.7940349984169, 'frequency': 75.326454857318, 
-  'decay': 0.35386192055739, 'amp': 0.62, 'spread': -0.18397433757782)
-RESON_503d.wav | resonatorPerc | ('foldAmount': 0.19018411636353, 'brightness': 0.1273917555809, 'drive': 1.8281792402267, 'bits': 9, 
-  'combAmount': 0.038702446222305, 'sampleRateReduction': 11479.775594989, 'noiseAmount': 0.44407461881638, 'resonance': 0.67878848075867, 'frequency': 151.50318935329, 
-  'decay': 0.38842114294182, 'amp': 0.62, 'spread': -0.045402598381042)
-RESON_603d.wav | resonatorPerc | ('foldAmount': 0.24714002013206, 'brightness': 0.99263746738434, 'drive': 2.2999898910522, 'bits': 16, 
-  'combAmount': 0.088507115840912, 'sampleRateReduction': 21695.450501306, 'noiseAmount': 0.29367055296898, 'resonance': 0.16102621793747, 'frequency': 518.01731844632, 
-  'decay': 0.86537658477554, 'amp': 0.62, 'spread': 0.10703806877136)
-RESON_703d.wav | resonatorPerc | ('foldAmount': 0.12332603335381, 'brightness': 0.86445100903511, 'drive': 2.6217650651932, 'bits': 12, 
-  'combAmount': 0.021078211069107, 'sampleRateReduction': 7116.1196023108, 'noiseAmount': 0.69180022478104, 'resonance': 0.83346047401428, 'frequency': 273.37142288321, 
-  'decay': 0.74039417681379, 'amp': 0.62, 'spread': 0.36989753246307)
-RESON_803d.wav | resonatorPerc | ('foldAmount': 0.21886003017426, 'brightness': 0.46114895343781, 'drive': 2.7372103452682, 'bits': 10, 
-  'combAmount': 0.12883651852608, 'sampleRateReduction': 18353.529018748, 'noiseAmount': 0.74019487500191, 'resonance': 0.60751112937927, 'frequency': 158.92677473314, 
-  'decay': 0.20339659232614, 'amp': 0.62, 'spread': 0.45077185630798)
-RESON_903d.wav | resonatorPerc | ('foldAmount': 0.22442790865898, 'brightness': 0.74667744040489, 'drive': 1.2801884889603, 'bits': 12, 
-  'combAmount': 0.27799092531204, 'sampleRateReduction': 20981.290727215, 'noiseAmount': 0.31737815141678, 'resonance': 0.42750660896301, 'frequency': 150.32635186192, 
-  'decay': 1.6152001802209, 'amp': 0.62, 'spread': 0.14086954593658)
-RESON_1003d.wav | resonatorPerc | ('foldAmount': 0.15752679109573, 'brightness': 0.60471935868263, 'drive': 1.4909629106522, 'bits': 5, 
-  'combAmount': 0.17889920473099, 'sampleRateReduction': 8012.9058787877, 'noiseAmount': 0.79406918883324, 'resonance': 0.32139136314392, 'frequency': 106.08854033769, 
-  'decay': 0.65857420256843, 'amp': 0.62, 'spread': 0.79998092651367)
-RESON_1103d.wav | resonatorPerc | ('foldAmount': 0.026652216911316, 'brightness': 0.85128209590912, 'drive': 1.8219329118729, 'bits': 7, 
-  'combAmount': 0.026900190114975, 'sampleRateReduction': 26314.421490309, 'noiseAmount': 0.43481876254082, 'resonance': 0.82727250337601, 'frequency': 114.44868612357, 
-  'decay': 0.42905483620039, 'amp': 0.62, 'spread': -0.17740256786346)
-RESON_1203d.wav | resonatorPerc | ('foldAmount': 0.21137815713882, 'brightness': 0.46939358115196, 'drive': 1.2155356645584, 'bits': 16, 
-  'combAmount': 0.31320351362228, 'sampleRateReduction': 31630.43256922, 'noiseAmount': 0.32688506245613, 'resonance': 0.47354390621185, 'frequency': 61.656533487314, 
-  'decay': 1.0180678111413, 'amp': 0.62, 'spread': 0.28418533802032)
+DHKICK_001.wav | experimentalKick | ('lowBoost': 3.5931444168091, 'harmonicAmount': 0.13827551841736, 'sampleRateReduction': 32000, 'decay': 0.33970022678375, 
+  'amp': 0.8, 'pitchAmount': 4.3856276750565, 'clickAmount': 0.074032278060913, 'drive': 1.7551405191422, 'bits': 16, 
+  'clickTone': 3803.0391175149, 'punchBoost': 2.552704334259, 'frequency': 60.662458057998, 'punchRatio': 2.1123462080956, 'punchDecay': 0.070410866737366, 
+  'pitchDecay': 0.031431481361389, 'punchAmount': 0.39086487293243)
+DHKICK_002.wav | experimentalKick | ('lowBoost': 2.2070276737213, 'harmonicAmount': 0.13092605113983, 'sampleRateReduction': 44100, 'decay': 0.39710731983185, 
+  'amp': 0.8, 'pitchAmount': 3.4489714860916, 'clickAmount': 0.13588912963867, 'drive': 1.5267578721046, 'bits': 16, 
+  'clickTone': 2315.582670591, 'punchBoost': 1.2278022766113, 'frequency': 52.130033888825, 'punchRatio': 1.958139872551, 'punchDecay': 0.063139510154724, 
+  'pitchDecay': 0.039458372116089, 'punchAmount': 0.44783647298813)
+DHKICK_003.wav | experimentalKick | ('lowBoost': 2.3320426940918, 'harmonicAmount': 0.16869375348091, 'sampleRateReduction': 32000, 'decay': 0.31094725608826, 
+  'amp': 0.8, 'pitchAmount': 3.6051972866058, 'clickAmount': 0.11793649673462, 'drive': 1.5708036899567, 'bits': 16, 
+  'clickTone': 4156.8834849635, 'punchBoost': 1.8067846298218, 'frequency': 48.825016010963, 'punchRatio': 2.2998744606972, 'punchDecay': 0.061760573387146, 
+  'pitchDecay': 0.037601930618286, 'punchAmount': 0.38870732545853)
+DHKICK_004.wav | experimentalKick | ('lowBoost': 3.1914381980896, 'harmonicAmount': 0.11190041303635, 'sampleRateReduction': 32000, 'decay': 0.3941238451004, 
+  'amp': 0.8, 'pitchAmount': 3.6624888539314, 'clickAmount': 0.13089680671692, 'drive': 2.0277541518211, 'bits': 16, 
+  'clickTone': 2487.5398546155, 'punchBoost': 1.5709912776947, 'frequency': 58.678042072248, 'punchRatio': 2.2485302448273, 'punchDecay': 0.088411688804626, 
+  'pitchDecay': 0.026738144874573, 'punchAmount': 0.3857901763916)
+DHKICK_005.wav | experimentalKick | ('lowBoost': 2.7799475193024, 'harmonicAmount': 0.14311962008476, 'sampleRateReduction': 32000, 'decay': 0.32945030212402, 
+  'amp': 0.8, 'pitchAmount': 3.537208533287, 'clickAmount': 0.097648992538452, 'drive': 2.026833319664, 'bits': 16, 
+  'clickTone': 3139.7745595021, 'punchBoost': 1.530237197876, 'frequency': 55.448166033391, 'punchRatio': 2.1315223932266, 'punchDecay': 0.076327271461487, 
+  'pitchDecay': 0.034271885871887, 'punchAmount': 0.38640592575073)
+DHKICK_006.wav | experimentalKick | ('lowBoost': 2.8342797756195, 'harmonicAmount': 0.15294528126717, 'sampleRateReduction': 32000, 'decay': 0.40343835830688, 
+  'amp': 0.8, 'pitchAmount': 5.3550468921661, 'clickAmount': 0.072167596817017, 'drive': 1.7664480209351, 'bits': 16, 
+  'clickTone': 2908.4010503321, 'punchBoost': 1.1533806324005, 'frequency': 48.470512014635, 'punchRatio': 2.1934989452362, 'punchDecay': 0.056998038291931, 
+  'pitchDecay': 0.040661756515503, 'punchAmount': 0.42791944026947)
+DHKICK_007.wav | experimentalKick | ('lowBoost': 2.1771850585938, 'harmonicAmount': 0.10547390460968, 'sampleRateReduction': 32000, 'decay': 0.3673920917511, 
+  'amp': 0.8, 'pitchAmount': 3.2660031318665, 'clickAmount': 0.070250005722046, 'drive': 1.6076316356659, 'bits': 14, 
+  'clickTone': 3319.7031580936, 'punchBoost': 2.6488370895386, 'frequency': 56.276114428758, 'punchRatio': 1.9985857963562, 'punchDecay': 0.078678984642029, 
+  'pitchDecay': 0.033231181621552, 'punchAmount': 0.36230533361435)
+DHKICK_008.wav | experimentalKick | ('lowBoost': 3.2761189937592, 'harmonicAmount': 0.1489975631237, 'sampleRateReduction': 32000, 'decay': 0.47496605396271, 
+  'amp': 0.8, 'pitchAmount': 5.1490462064743, 'clickAmount': 0.073930540084839, 'drive': 1.5992874860764, 'bits': 14, 
+  'clickTone': 2523.4987186569, 'punchBoost': 2.055091381073, 'frequency': 52.58836242419, 'punchRatio': 2.3465557456017, 'punchDecay': 0.06050274848938, 
+  'pitchDecay': 0.028094191074371, 'punchAmount': 0.37462868928909)
+GRKICK_001.wav | experimentalKick | ('lowBoost': 4.3482751846313, 'harmonicAmount': 0.18171531915665, 'sampleRateReduction': 32000, 'decay': 0.40074191689491, 
+  'amp': 0.78, 'pitchAmount': 5.9230296611786, 'clickAmount': 0.10426211476326, 'drive': 2.761803150177, 'bits': 14, 
+  'clickTone': 4787.4416881955, 'punchBoost': 2.0794506072998, 'frequency': 47.118653114129, 'punchRatio': 2.2054723739624, 'punchDecay': 0.059716892242432, 
+  'pitchDecay': 0.037752240180969, 'punchAmount': 0.38770888805389)
+GRKICK_002.wav | experimentalKick | ('lowBoost': 2.8268520236015, 'harmonicAmount': 0.22381155490875, 'sampleRateReduction': 32000, 'decay': 0.42356044530869, 
+  'amp': 0.78, 'pitchAmount': 4.003293800354, 'clickAmount': 0.084613678455353, 'drive': 2.6868721008301, 'bits': 12, 
+  'clickTone': 2904.0126455282, 'punchBoost': 2.4758265018463, 'frequency': 43.816578840103, 'punchRatio': 2.2908457756042, 'punchDecay': 0.070467014312744, 
+  'pitchDecay': 0.022130432605743, 'punchAmount': 0.45220666885376)
+GRKICK_003.wav | experimentalKick | ('lowBoost': 2.7510897517204, 'harmonicAmount': 0.21012756586075, 'sampleRateReduction': 44100, 'decay': 0.37381533265114, 
+  'amp': 0.78, 'pitchAmount': 4.8947217464447, 'clickAmount': 0.10389434099197, 'drive': 2.070118522644, 'bits': 14, 
+  'clickTone': 2888.0842511479, 'punchBoost': 2.9750235080719, 'frequency': 51.225607947993, 'punchRatio': 2.5029234886169, 'punchDecay': 0.063744797706604, 
+  'pitchDecay': 0.034523284912109, 'punchAmount': 0.54497340679169)
+GRKICK_004.wav | experimentalKick | ('lowBoost': 3.8310242891312, 'harmonicAmount': 0.1952341234684, 'sampleRateReduction': 32000, 'decay': 0.27686464428902, 
+  'amp': 0.78, 'pitchAmount': 5.1035713195801, 'clickAmount': 0.08581728219986, 'drive': 2.3210205078125, 'bits': 16, 
+  'clickTone': 4332.0747191586, 'punchBoost': 2.0906345844269, 'frequency': 52.561638806527, 'punchRatio': 2.0629022598267, 'punchDecay': 0.064976115226746, 
+  'pitchDecay': 0.032028422832489, 'punchAmount': 0.54156807422638)
+GRKICK_005.wav | experimentalKick | ('lowBoost': 3.5604120492935, 'harmonicAmount': 0.14940314173698, 'sampleRateReduction': 44100, 'decay': 0.24878946781158, 
+  'amp': 0.78, 'pitchAmount': 5.0842784881592, 'clickAmount': 0.082054411172867, 'drive': 2.75993257761, 'bits': 16, 
+  'clickTone': 3196.0627715931, 'punchBoost': 2.8569760322571, 'frequency': 49.811202836884, 'punchRatio': 2.5852947235107, 'punchDecay': 0.046990160942078, 
+  'pitchDecay': 0.029906888484955, 'punchAmount': 0.50843139648438)
+GRKICK_006.wav | experimentalKick | ('lowBoost': 3.6985151171684, 'harmonicAmount': 0.19256087660789, 'sampleRateReduction': 22050, 'decay': 0.32159235835075, 
+  'amp': 0.78, 'pitchAmount': 6.5612859249115, 'clickAmount': 0.10126307249069, 'drive': 2.6008319854736, 'bits': 16, 
+  'clickTone': 2850.3389207494, 'punchBoost': 2.6780350208282, 'frequency': 49.860354563294, 'punchRatio': 2.5692893981934, 'punchDecay': 0.072327518463135, 
+  'pitchDecay': 0.034350395679474, 'punchAmount': 0.43650353908539)
+GRKICK_007.wav | experimentalKick | ('lowBoost': 4.2586604952812, 'harmonicAmount': 0.13179413676262, 'sampleRateReduction': 22050, 'decay': 0.29945076346397, 
+  'amp': 0.78, 'pitchAmount': 5.5153390884399, 'clickAmount': 0.11585854887962, 'drive': 2.6243951916695, 'bits': 12, 
+  'clickTone': 2806.2187341762, 'punchBoost': 2.2945783138275, 'frequency': 52.155364431849, 'punchRatio': 2.2269370079041, 'punchDecay': 0.074061150550842, 
+  'pitchDecay': 0.037151916503906, 'punchAmount': 0.41140373706818)
+GRKICK_008.wav | experimentalKick | ('lowBoost': 4.1648886799812, 'harmonicAmount': 0.23733939409256, 'sampleRateReduction': 22050, 'decay': 0.40651119709015, 
+  'amp': 0.78, 'pitchAmount': 5.8106676101685, 'clickAmount': 0.10424579620361, 'drive': 2.2926575422287, 'bits': 12, 
+  'clickTone': 3700.345943137, 'punchBoost': 2.7508492469788, 'frequency': 45.644923754287, 'punchRatio': 2.5354320526123, 'punchDecay': 0.058199429512024, 
+  'pitchDecay': 0.02178395318985, 'punchAmount': 0.46996086597443)
+GQKICK_001.wav | experimentalKick | ('lowBoost': 4.2156081199646, 'harmonicAmount': 0.13344585180283, 'sampleRateReduction': 44100, 'decay': 0.71650883674622, 
+  'amp': 0.82, 'pitchAmount': 3.3264189004898, 'clickAmount': 0.045876712799072, 'drive': 2.6325888991356, 'bits': 14, 
+  'clickTone': 1935.5877618365, 'punchBoost': 1.5099883079529, 'frequency': 45.315832618669, 'punchRatio': 2.0854846954346, 'punchDecay': 0.10229085683823, 
+  'pitchDecay': 0.048365493774414, 'punchAmount': 0.24982134819031)
+GQKICK_002.wav | experimentalKick | ('lowBoost': 4.9072929024696, 'harmonicAmount': 0.143112449646, 'sampleRateReduction': 44100, 'decay': 0.55487952947617, 
+  'amp': 0.82, 'pitchAmount': 2.8541200876236, 'clickAmount': 0.040960867404938, 'drive': 2.150633919239, 'bits': 16, 
+  'clickTone': 1866.6283149145, 'punchBoost': 2.050856590271, 'frequency': 48.353077799537, 'punchRatio': 1.8461632847786, 'punchDecay': 0.10601676702499, 
+  'pitchDecay': 0.041285270690918, 'punchAmount': 0.3645903301239)
+GQKICK_003.wav | experimentalKick | ('lowBoost': 5.1596348285675, 'harmonicAmount': 0.16248310089111, 'sampleRateReduction': 44100, 'decay': 0.60404577970505, 
+  'amp': 0.82, 'pitchAmount': 3.1831387281418, 'clickAmount': 0.045695731639862, 'drive': 2.3585168123245, 'bits': 16, 
+  'clickTone': 1932.2280499917, 'punchBoost': 1.4291923046112, 'frequency': 43.667201087078, 'punchRatio': 1.8855562329292, 'punchDecay': 0.083517246246338, 
+  'pitchDecay': 0.057014305114746, 'punchAmount': 0.25445725440979)
+GQKICK_004.wav | experimentalKick | ('lowBoost': 4.65258705616, 'harmonicAmount': 0.17324951171875, 'sampleRateReduction': 32000, 'decay': 0.62745577812195, 
+  'amp': 0.82, 'pitchAmount': 3.3067053079605, 'clickAmount': 0.015266835689545, 'drive': 1.8926321268082, 'bits': 16, 
+  'clickTone': 2413.5154335857, 'punchBoost': 1.0398757457733, 'frequency': 40.152557474477, 'punchRatio': 2.0118140101433, 'punchDecay': 0.074583687782288, 
+  'pitchDecay': 0.036706970214844, 'punchAmount': 0.38967632770538)
+GQKICK_005.wav | experimentalKick | ('lowBoost': 4.3421973586082, 'harmonicAmount': 0.091790120601654, 'sampleRateReduction': 44100, 'decay': 0.68231868267059, 
+  'amp': 0.82, 'pitchAmount': 3.2191279649734, 'clickAmount': 0.017358458042145, 'drive': 2.5624219894409, 'bits': 14, 
+  'clickTone': 2485.8356090511, 'punchBoost': 2.9733948707581, 'frequency': 47.896638391007, 'punchRatio': 2.1960861802101, 'punchDecay': 0.096577022075653, 
+  'pitchDecay': 0.055434509277344, 'punchAmount': 0.22012211799622)
+GQKICK_006.wav | experimentalKick | ('lowBoost': 3.4146212339401, 'harmonicAmount': 0.10374863624573, 'sampleRateReduction': 32000, 'decay': 0.69495610713959, 
+  'amp': 0.82, 'pitchAmount': 2.6376138925552, 'clickAmount': 0.040241556167603, 'drive': 2.0808794260025, 'bits': 14, 
+  'clickTone': 1762.7310441957, 'punchBoost': 1.3254065513611, 'frequency': 41.867705375536, 'punchRatio': 1.9899169921875, 'punchDecay': 0.10557993173599, 
+  'pitchDecay': 0.042011169433594, 'punchAmount': 0.26619030952454)
+GQKICK_007.wav | experimentalKick | ('lowBoost': 4.7906239628792, 'harmonicAmount': 0.15583948373795, 'sampleRateReduction': 32000, 'decay': 0.49802360057831, 
+  'amp': 0.82, 'pitchAmount': 2.8193693876266, 'clickAmount': 0.064168577194214, 'drive': 1.9667125940323, 'bits': 14, 
+  'clickTone': 2839.0705731397, 'punchBoost': 1.8032388687134, 'frequency': 39.855553125238, 'punchRatio': 1.7024486780167, 'punchDecay': 0.07389773607254, 
+  'pitchDecay': 0.030744800567627, 'punchAmount': 0.2502294254303)
+GQKICK_008.wav | experimentalKick | ('lowBoost': 3.7068687677383, 'harmonicAmount': 0.080887215137482, 'sampleRateReduction': 32000, 'decay': 0.66693732261658, 
+  'amp': 0.82, 'pitchAmount': 3.3160039901733, 'clickAmount': 0.061538581848145, 'drive': 2.2822927236557, 'bits': 16, 
+  'clickTone': 2802.3072357636, 'punchBoost': 2.3537569046021, 'frequency': 45.450204554991, 'punchRatio': 2.1479361176491, 'punchDecay': 0.10504675865173, 
+  'pitchDecay': 0.039370262145996, 'punchAmount': 0.31428441524506)
+DHSNARE_001.wav | experimentalSnare | ('noiseTone': 2431.1540653182, 'bodyAmount': 0.71445502519608, 'crackBoost': 1.4759712219238, 'ringAmount': 0.11767225980759, 
+  'amp': 0.74, 'clapAmount': 0.13134695887566, 'ringRatio': 1.9328030467033, 'bodyBoost': 1.657922744751, 'drive': 1.4345443487167, 
+  'decay': 0.20789549589157, 'noiseAmount': 0.58149729967117, 'frequency': 183.61583701307, 'noiseWidth': 0.55092093467712, 'bits': 14, 
+  'sampleRateReduction': 44100)
+DHSNARE_002.wav | experimentalSnare | ('noiseTone': 2443.0909259874, 'bodyAmount': 0.70111637592316, 'crackBoost': 1.5400421619415, 'ringAmount': 0.048860676288605, 
+  'amp': 0.74, 'clapAmount': 0.2101274728775, 'ringRatio': 1.8642188668251, 'bodyBoost': 2.3653547763824, 'drive': 1.6442176222801, 
+  'decay': 0.22282027006149, 'noiseAmount': 0.6043462896347, 'frequency': 223.58728956566, 'noiseWidth': 0.57035651683807, 'bits': 14, 
+  'sampleRateReduction': 32000)
+DHSNARE_003.wav | experimentalSnare | ('noiseTone': 3314.352263988, 'bodyAmount': 0.67356158733368, 'crackBoost': 1.1455163955688, 'ringAmount': 0.11958438873291, 
+  'amp': 0.74, 'clapAmount': 0.12266052365303, 'ringRatio': 1.592051422596, 'bodyBoost': 2.4018423557281, 'drive': 1.4084146618843, 
+  'decay': 0.15824439287186, 'noiseAmount': 0.43056584119797, 'frequency': 176.88249966893, 'noiseWidth': 0.65693208456039, 'bits': 14, 
+  'sampleRateReduction': 44100)
+DHSNARE_004.wav | experimentalSnare | ('noiseTone': 2766.095640846, 'bodyAmount': 0.60658714056015, 'crackBoost': 2.1223537921906, 'ringAmount': 0.021127469539642, 
+  'amp': 0.74, 'clapAmount': 0.1532756125927, 'ringRatio': 1.8308874130249, 'bodyBoost': 2.5863630771637, 'drive': 1.6801975846291, 
+  'decay': 0.15239871501923, 'noiseAmount': 0.60300925254822, 'frequency': 195.46268137343, 'noiseWidth': 0.50867457866669, 'bits': 16, 
+  'sampleRateReduction': 44100)
+DHSNARE_005.wav | experimentalSnare | ('noiseTone': 2020.584785304, 'bodyAmount': 0.74097976922989, 'crackBoost': 0.93146920204163, 'ringAmount': 0.050728042125702, 
+  'amp': 0.74, 'clapAmount': 0.22677617311478, 'ringRatio': 1.9206533193588, 'bodyBoost': 2.7715451717377, 'drive': 1.7340955138206, 
+  'decay': 0.14377690553665, 'noiseAmount': 0.60637081384659, 'frequency': 185.11158322552, 'noiseWidth': 0.49696946382523, 'bits': 16, 
+  'sampleRateReduction': 44100)
+DHSNARE_006.wav | experimentalSnare | ('noiseTone': 2880.2143062113, 'bodyAmount': 0.60989297270775, 'crackBoost': 2.3855557441711, 'ringAmount': 0.098271234035492, 
+  'amp': 0.74, 'clapAmount': 0.12870309114456, 'ringRatio': 2.1135996580124, 'bodyBoost': 3.4038016796112, 'drive': 1.9005848884583, 
+  'decay': 0.18282774925232, 'noiseAmount': 0.42155477285385, 'frequency': 222.90383366079, 'noiseWidth': 0.74925809144974, 'bits': 16, 
+  'sampleRateReduction': 44100)
+DHSNARE_007.wav | experimentalSnare | ('noiseTone': 2389.425056926, 'bodyAmount': 0.65877043485641, 'crackBoost': 1.2253355979919, 'ringAmount': 0.08958976984024, 
+  'amp': 0.74, 'clapAmount': 0.12226007580757, 'ringRatio': 1.7428376674652, 'bodyBoost': 1.7928273677826, 'drive': 1.5218232154846, 
+  'decay': 0.15425743579865, 'noiseAmount': 0.54928746938705, 'frequency': 220.73243219387, 'noiseWidth': 0.51844076395035, 'bits': 14, 
+  'sampleRateReduction': 44100)
+DHSNARE_008.wav | experimentalSnare | ('noiseTone': 3610.9144637263, 'bodyAmount': 0.64740671396256, 'crackBoost': 1.5476324558258, 'ringAmount': 0.035487575531006, 
+  'amp': 0.74, 'clapAmount': 0.22242853760719, 'ringRatio': 1.950378215313, 'bodyBoost': 2.4647498130798, 'drive': 1.8220936059952, 
+  'decay': 0.2080486369133, 'noiseAmount': 0.55816956996918, 'frequency': 205.53792545261, 'noiseWidth': 0.80045016050339, 'bits': 14, 
+  'sampleRateReduction': 32000)
+GRSNARE_001.wav | experimentalSnare | ('noiseTone': 3167.4815122096, 'bodyAmount': 0.74587604522705, 'crackBoost': 2.6161231994629, 'ringAmount': 0.071964579820633, 
+  'amp': 0.72, 'clapAmount': 0.24176201343536, 'ringRatio': 2.683529484272, 'bodyBoost': 3.6542251110077, 'drive': 2.2234773039818, 
+  'decay': 0.20411903381348, 'noiseAmount': 0.6153703546524, 'frequency': 177.0023207067, 'noiseWidth': 0.43007984876633, 'bits': 12, 
+  'sampleRateReduction': 44100)
+GRSNARE_002.wav | experimentalSnare | ('noiseTone': 3245.337883763, 'bodyAmount': 0.64924894332886, 'crackBoost': 2.5473093986511, 'ringAmount': 0.06045891046524, 
+  'amp': 0.72, 'clapAmount': 0.3090753030777, 'ringRatio': 2.0218285679817, 'bodyBoost': 3.3645985126495, 'drive': 2.1533078193665, 
+  'decay': 0.28498705625534, 'noiseAmount': 0.56508278846741, 'frequency': 154.74001895664, 'noiseWidth': 0.41386904239655, 'bits': 16, 
+  'sampleRateReduction': 44100)
+GRSNARE_003.wav | experimentalSnare | ('noiseTone': 4231.1025309603, 'bodyAmount': 0.69793797492981, 'crackBoost': 1.1956207752228, 'ringAmount': 0.13669777989388, 
+  'amp': 0.72, 'clapAmount': 0.20894827365875, 'ringRatio': 2.0890377879143, 'bodyBoost': 3.213406085968, 'drive': 1.9937379479408, 
+  'decay': 0.21101183891296, 'noiseAmount': 0.73000966072083, 'frequency': 159.61916573777, 'noiseWidth': 0.548272960186, 'bits': 12, 
+  'sampleRateReduction': 22050)
+GRSNARE_004.wav | experimentalSnare | ('noiseTone': 4750.6595467422, 'bodyAmount': 0.73655271530151, 'crackBoost': 2.2573330402374, 'ringAmount': 0.13375273704529, 
+  'amp': 0.72, 'clapAmount': 0.17567638874054, 'ringRatio': 1.82793405056, 'bodyBoost': 3.1353371143341, 'drive': 2.3338374376297, 
+  'decay': 0.28747453689575, 'noiseAmount': 0.5792268037796, 'frequency': 162.06741942672, 'noiseWidth': 0.38173174619675, 'bits': 16, 
+  'sampleRateReduction': 44100)
+GRSNARE_005.wav | experimentalSnare | ('noiseTone': 2206.9170190788, 'bodyAmount': 0.60107149124146, 'crackBoost': 1.6956868171692, 'ringAmount': 0.078276731967926, 
+  'amp': 0.72, 'clapAmount': 0.22478384494781, 'ringRatio': 1.8286047816277, 'bodyBoost': 3.8538031578064, 'drive': 2.5016746282578, 
+  'decay': 0.29242271900177, 'noiseAmount': 0.71977267742157, 'frequency': 201.39731037794, 'noiseWidth': 0.50665618181229, 'bits': 16, 
+  'sampleRateReduction': 32000)
+GRSNARE_006.wav | experimentalSnare | ('noiseTone': 2778.5229201128, 'bodyAmount': 0.76619091033936, 'crackBoost': 1.7396280765533, 'ringAmount': 0.10457898020744, 
+  'amp': 0.72, 'clapAmount': 0.25022384643555, 'ringRatio': 2.3710893154144, 'bodyBoost': 3.7073905467987, 'drive': 2.5876756906509, 
+  'decay': 0.18967325687408, 'noiseAmount': 0.50925243854523, 'frequency': 180.44471980952, 'noiseWidth': 0.54229388833046, 'bits': 14, 
+  'sampleRateReduction': 22050)
+GRSNARE_007.wav | experimentalSnare | ('noiseTone': 2844.9558818756, 'bodyAmount': 0.65677815437317, 'crackBoost': 2.1912784576416, 'ringAmount': 0.10999840021133, 
+  'amp': 0.72, 'clapAmount': 0.16253399372101, 'ringRatio': 2.758700799942, 'bodyBoost': 3.1133408546448, 'drive': 2.4503686904907, 
+  'decay': 0.20565551042557, 'noiseAmount': 0.48611866474152, 'frequency': 185.85452383949, 'noiseWidth': 0.38067197680473, 'bits': 14, 
+  'sampleRateReduction': 22050)
+GRSNARE_008.wav | experimentalSnare | ('noiseTone': 2532.3701534302, 'bodyAmount': 0.68252106666565, 'crackBoost': 1.6076807975769, 'ringAmount': 0.13242002367973, 
+  'amp': 0.72, 'clapAmount': 0.21689393043518, 'ringRatio': 2.1060995340347, 'bodyBoost': 3.1186292171478, 'drive': 2.7080897092819, 
+  'decay': 0.23008159399033, 'noiseAmount': 0.61233083248138, 'frequency': 189.00403008424, 'noiseWidth': 0.56966339111328, 'bits': 14, 
+  'sampleRateReduction': 44100)
+GQPERC_001.wav | metalPerc | ('foldAmount': 0.018255364894867, 'exciterAmount': 0.23884334564209, 'combDecay': 0.055073728561401, 'sampleRateReduction': 22050, 
+  'combAmount': 0.087819635868073, 'amp': 0.66, 'inharmonicity': 0.55888917446136, 'drive': 2.1858037948608, 'decay': 0.3286060333252, 
+  'resonance': 0.26772511959076, 'fmAmount': 0.47648404836655, 'frequency': 76.889470188676, 'bits': 16)
+GQPERC_002.wav | metalPerc | ('foldAmount': 0.028345549106598, 'exciterAmount': 0.16507011413574, 'combDecay': 0.071673369407654, 'sampleRateReduction': 32000, 
+  'combAmount': 0.019905173778534, 'amp': 0.66, 'inharmonicity': 0.8416229724884, 'drive': 2.0469337463379, 'decay': 0.14434834480286, 
+  'resonance': 0.28915201187134, 'fmAmount': 0.43653022050858, 'frequency': 160.09441227892, 'bits': 12)
+GQPERC_003.wav | metalPerc | ('foldAmount': 0.096194016933441, 'exciterAmount': 0.39817951202393, 'combDecay': 0.052633876800537, 'sampleRateReduction': 22050, 
+  'combAmount': 0.019817316532135, 'amp': 0.66, 'inharmonicity': 0.33906265497208, 'drive': 2.0658032417297, 'decay': 0.30665122509003, 
+  'resonance': 0.18878756523132, 'fmAmount': 0.30380319356918, 'frequency': 76.861980308509, 'bits': 16)
+GQPERC_004.wav | metalPerc | ('foldAmount': 0.056095504760742, 'exciterAmount': 0.20966304779053, 'combDecay': 0.13502504348755, 'sampleRateReduction': 22050, 
+  'combAmount': 0.054310977458954, 'amp': 0.66, 'inharmonicity': 0.44724910855293, 'drive': 2.1827111244202, 'decay': 0.12822544574738, 
+  'resonance': 0.31056802272797, 'fmAmount': 0.35164915323257, 'frequency': 155.35837968887, 'bits': 12)
+GQPERC_005.wav | metalPerc | ('foldAmount': 0.027622008323669, 'exciterAmount': 0.26702903747559, 'combDecay': 0.14010869503021, 'sampleRateReduction': 22050, 
+  'combAmount': 0.025732922554016, 'amp': 0.66, 'inharmonicity': 0.8011287689209, 'drive': 1.7486368179321, 'decay': 0.35895689487457, 
+  'resonance': 0.20604864120483, 'fmAmount': 0.52253733873367, 'frequency': 111.94450234681, 'bits': 12)
+GQPERC_006.wav | metalPerc | ('foldAmount': 0.041476321220398, 'exciterAmount': 0.35820350646973, 'combDecay': 0.14482333183289, 'sampleRateReduction': 22050, 
+  'combAmount': 0.0068413853645325, 'amp': 0.66, 'inharmonicity': 0.87236368060112, 'drive': 2.2441013336182, 'decay': 0.11575750350952, 
+  'resonance': 0.18417347431183, 'fmAmount': 0.36277352571487, 'frequency': 170.92832075959, 'bits': 12)
+GQPERC_007.wav | metalPerc | ('foldAmount': 0.0001090407371521, 'exciterAmount': 0.26197116851807, 'combDecay': 0.094653449058533, 'sampleRateReduction': 32000, 
+  'combAmount': 0.075930345058441, 'amp': 0.66, 'inharmonicity': 0.84801941514015, 'drive': 1.770901966095, 'decay': 0.33271443843842, 
+  'resonance': 0.1883114528656, 'fmAmount': 0.3831104516983, 'frequency': 91.051814589179, 'bits': 12)
+GQPERC_008.wav | metalPerc | ('foldAmount': 0.024698007106781, 'exciterAmount': 0.4408447265625, 'combDecay': 0.14847705841064, 'sampleRateReduction': 22050, 
+  'combAmount': 0.09272974729538, 'amp': 0.66, 'inharmonicity': 0.41013797521591, 'drive': 2.0159058570862, 'decay': 0.18195628166199, 
+  'resonance': 0.15571157455444, 'fmAmount': 0.18984566926956, 'frequency': 100.02539518607, 'bits': 12)

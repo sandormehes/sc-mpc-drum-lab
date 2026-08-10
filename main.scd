@@ -1,16 +1,14 @@
 // SC MPC Drum Lab
-// Evaluate this entire file once. Then run: ~start.();
+// Evaluate this entire file once. Rendering starts only when requested.
 
 (
-var root;
-var sourcePath;
 var loadProject;
+var sourcePath;
 
 loadProject = { |projectDirectory|
-    var configPath;
+    var configPath, profilePaths;
 
     configPath = projectDirectory +/+ "config.scd";
-
     if(PathName(configPath).isFile.not) {
         Error(
             "The selected folder is not sc-mpc-drum-lab: "
@@ -18,57 +16,61 @@ loadProject = { |projectDirectory|
         ).throw;
     };
 
-    root = projectDirectory;
-    ~projectRoot = root;
+    ~projectRoot = projectDirectory;
 
-    (root +/+ "config.scd").load;
-    (root +/+ "lib/processing.scd").load;
+    // Configuration and shared processing.
+    (projectDirectory +/+ "config.scd").load;
+    (projectDirectory +/+ "lib/processing.scd").load;
 
-    (root +/+ "synthdefs/kick.scd").load;
-    (root +/+ "synthdefs/snare.scd").load;
-    (root +/+ "synthdefs/metal.scd").load;
-    (root +/+ "synthdefs/glitch.scd").load;
-    (root +/+ "synthdefs/resonator.scd").load;
+    // Synthesis engines.
+    (projectDirectory +/+ "synthdefs/kick.scd").load;
+    (projectDirectory +/+ "synthdefs/snare.scd").load;
+    (projectDirectory +/+ "synthdefs/metal.scd").load;
+    (projectDirectory +/+ "synthdefs/glitch.scd").load;
+    (projectDirectory +/+ "synthdefs/resonator.scd").load;
 
-    (root +/+ "lib/renderer.scd").load;
-    (root +/+ "lib/manifest.scd").load;
-    (root +/+ "presets/presets.scd").load;
-    (root +/+ "lib/generator.scd").load;
+    // Rendering and generation system.
+    (projectDirectory +/+ "lib/renderer.scd").load;
+    (projectDirectory +/+ "lib/manifest.scd").load;
+    (projectDirectory +/+ "presets/presets.scd").load;
+    (projectDirectory +/+ "lib/generator.scd").load;
+
+    // Profiles register additional engines, ranges, and defaults. Loading all
+    // profile files is safe because profiles do not activate themselves.
+    profilePaths = (projectDirectory +/+ "profiles/*.scd").pathMatch.sort;
+    profilePaths.do { |profilePath| profilePath.load };
+
+    ~activateProfile.(~config[\activeProfile]);
 
     "".postln;
     "SC MPC Drum Lab loaded.".postln;
-    ("Output: " ++ ~config[\outputDirectory]).postln;
-    "Run ~start.() to generate a pack.".postln;
-    "Run ~renderPreset.(\\deepKick) to export one preset.".postln;
+    ("Version: " ++ ~runtimeConfig[\projectVersion]).postln;
+    ("Profile: " ++ ~activeProfileDefinition[\displayName]).postln;
+    ("Output root: " ++ ~runtimeConfig[\outputDirectory]).postln;
 
-    if(~config[\autoStart]) {
+    if(~runtimeConfig[\autoStart]) {
+        "Starting sample generation...".postln;
         ~start.();
+    } {
+        "Run ~dryRun.() to inspect the plan.".postln;
+        "Run ~start.() to generate the sample pack.".postln;
     };
 };
 
-// nowExecutingPath is available when main.scd is loaded as a file. Some IDE
-// evaluation modes return nil; in that case ask for the repository folder.
 sourcePath = thisProcess.nowExecutingPath;
 
 if(sourcePath.notNil) {
     loadProject.(PathName(sourcePath).pathOnly);
 } {
-    "Select the sc-mpc-drum-lab folder in the dialog.".postln;
-
+    "Select the sc-mpc-drum-lab folder.".postln;
     FileDialog(
         { |selectedDirectory|
-            {
-                loadProject.(selectedDirectory);
-            }.defer;
+            { loadProject.(selectedDirectory) }.defer;
         },
-        {
-            "Project loading cancelled.".warn;
-        },
+        { "Project loading cancelled.".warn },
         fileMode: 2,
         stripResult: true,
         path: Platform.userHomeDir
     );
 };
 )
-
-~start.();

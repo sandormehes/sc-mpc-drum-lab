@@ -14,7 +14,7 @@
         [frequency * pitchAmount, frequency * 0.82,
             frequency * (1 + pitchBounce), frequency],
         [0.006, 0.025, decay],
-        curves: [-10, 5, -5]
+        curve: [-10, 5, -5]
     ));
 
     ampEnv = EnvGen.kr(

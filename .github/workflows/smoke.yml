@@ -1,0 +1,24 @@
+name: Smoke tests
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  supercollider:
+    runs-on: ubuntu-latest
+    env:
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install SuperCollider
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes supercollider-language supercollider-server xvfb
+      - name: Run language smoke tests
+        run: xvfb-run --auto-servernum sclang tests/smoke.scd
+      - name: Render and validate one sample
+        run: xvfb-run --auto-servernum sclang tests/render_smoke.scd

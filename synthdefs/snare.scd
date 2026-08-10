@@ -19,7 +19,7 @@
     pitchEnv = EnvGen.kr(Env(
         [frequency * 2.2, frequency * 0.9, frequency],
         [0.012, decay * 0.3],
-        curves: [-9, -4]
+        curve: [-9, -4]
     ));
 
     fm = SinOsc.ar(pitchEnv * fmRatio, 0, pitchEnv * fmAmount);

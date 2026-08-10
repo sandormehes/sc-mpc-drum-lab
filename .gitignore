@@ -1,0 +1,5 @@
+.DS_Store
+
+# Rendered packs are build artifacts. Keep only the directory placeholder.
+output/*
+!output/.gitkeep

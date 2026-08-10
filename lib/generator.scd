@@ -124,27 +124,106 @@
     }
 );
 
-~makeJobs = {
-    var jobs;
-    jobs = List.new;
-    thisThread.randSeed = ~config[\randomSeed];
+~profiles[\original] = (
+    displayName: "Original Experimental",
+    defaults: (
+        samplesPerEngine: 12,
+        masterAmp: 0.8,
+        enabledEngines: [\kick, \snare, \metal, \glitch, \resonator]
+    )
+);
 
-    ~config[\enabledEngines].do { |engineName|
+~activateProfile = { |profileName|
+    var profile, defaults;
+
+    profile = ~profiles[profileName];
+    if(profile.isNil) {
+        Error("Unknown profile: " ++ profileName).throw;
+    };
+
+    ~runtimeConfig = ~config.deepCopy;
+    defaults = profile[\defaults];
+    defaults.keysValuesDo { |key, value|
+        if(~runtimeConfig[key].isNil) {
+            ~runtimeConfig[key] = value.deepCopy;
+        };
+    };
+
+    if(~runtimeConfig[\samplesPerEngine].isInteger.not
+        or: { ~runtimeConfig[\samplesPerEngine] <= 0 }) {
+        Error("samplesPerEngine must be a positive integer.").throw;
+    };
+    if(~runtimeConfig[\masterAmp].isNumber.not
+        or: { ~runtimeConfig[\masterAmp] <= 0 }) {
+        Error("masterAmp must be a positive number.").throw;
+    };
+    if(~runtimeConfig[\enabledEngines].isArray.not
+        or: { ~runtimeConfig[\enabledEngines].isEmpty }) {
+        Error("enabledEngines must be a non-empty Array.").throw;
+    };
+    if(~runtimeConfig[\maxConcurrentRenders].isInteger.not
+        or: { ~runtimeConfig[\maxConcurrentRenders] <= 0 }) {
+        Error("maxConcurrentRenders must be a positive integer.").throw;
+    };
+
+    ~runtimeConfig[\enabledEngines].do { |engineName|
         var spec;
         spec = ~generatorSpecs[engineName];
         if(spec.isNil) {
             Error("Missing generator specification: " ++ engineName).throw;
         };
+        if(~drumDefs[spec[\synth]].isNil) {
+            Error("Missing SynthDef: " ++ spec[\synth]).throw;
+        };
+    };
 
-        ~config[\samplesPerEngine].do { |index|
-            var parameters, filename;
+    ~activeProfile = profileName;
+    ~activeProfileDefinition = profile;
+    profile;
+};
+
+~zeroPadNumber = { |number, width = 3|
+    var result;
+    result = number.asInteger.asString;
+    while({ result.size < width }, {
+        result = "0" ++ result;
+    });
+    result;
+};
+
+~sampleFilename = { |prefix, index|
+    var allowed, filename, prefixString;
+    allowed = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
+    prefixString = prefix.asString.toUpper;
+
+    prefixString.do { |character|
+        if(allowed.includes(character).not) {
+            Error("Unsafe sample filename prefix: " ++ prefixString).throw;
+        };
+    };
+
+    filename = prefixString
+        ++ "_" ++ ~zeroPadNumber.(index, 3) ++ ".wav";
+    filename;
+};
+
+~makeJobs = {
+    var jobs;
+    jobs = List.new;
+    thisThread.randSeed = ~runtimeConfig[\randomSeed];
+
+    ~runtimeConfig[\enabledEngines].do { |engineName|
+        var spec;
+        spec = ~generatorSpecs[engineName];
+
+        ~runtimeConfig[\samplesPerEngine].do { |index|
+            var parameters;
             parameters = spec[\generator].value;
-            filename = spec[\prefix]
-                ++ "_" ++ "%03d".format(index + 1) ++ ".wav";
             jobs.add((
+                family: engineName,
                 engine: spec[\synth],
                 parameters: parameters,
-                filename: filename,
+                filename: ~sampleFilename.(spec[\prefix], index + 1),
                 duration: spec[\duration]
             ));
         };
@@ -152,44 +231,137 @@
     jobs.asArray;
 };
 
-~runJobQueue = {
-    |jobs, index = 0|
-    if(index >= jobs.size) {
+~planJobs = { |engineNames|
+    var jobs;
+    ~activateProfile.(~config[\activeProfile]);
+    jobs = ~makeJobs.();
+
+    if(engineNames.notNil) {
+        jobs = jobs.select { |job| engineNames.asArray.includes(job[\family]) };
+    };
+    if(jobs.isEmpty) {
+        Error("No render jobs matched the requested engines.").throw;
+    };
+    jobs;
+};
+
+~dryRun = { |engineNames|
+    var jobs;
+    jobs = ~planJobs.(engineNames);
+    ("Planned " ++ jobs.size ++ " renders:").postln;
+    jobs.do { |job| ("  " ++ job[\filename]).postln };
+    jobs;
+};
+
+~finishGenerationIfReady = {
+    var state;
+    state = ~generationState;
+
+    if(state.notNil
+        and: { state[\active] == 0 }
+        and: {
+            state[\nextIndex] >= state[\jobs].size
+            or: { state[\cancelled] }
+        }) {
+
         ~generationRunning = false;
+        ~finalizeManifest.(state);
         "".postln;
-        "Sample pack generation finished.".postln;
-        ("Samples:  " ++ ~config[\outputDirectory]).postln;
-        ("Manifest: " ++ ~manifestPath).postln;
-    } {
+
+        if(state[\cancelled]) {
+            "Sample pack generation cancelled.".warn;
+        } {
+            "Sample pack generation finished.".postln;
+        };
+        ("Completed: " ++ state[\completed]).postln;
+        ("Failed:    " ++ state[\failures].size).postln;
+        ("Samples:   " ++ ~currentRunDirectory).postln;
+        ("Manifest:  " ++ ~manifestPath).postln;
+    };
+};
+
+~pumpJobQueue = {
+    var maximumWorkers, state;
+    state = ~generationState;
+    maximumWorkers = ~runtimeConfig[\maxConcurrentRenders].asInteger.clip(1, 8);
+
+    while({
+        state[\cancelled].not
+        and: { state[\active] < maximumWorkers }
+        and: { state[\nextIndex] < state[\jobs].size }
+    }, {
         var job;
-        job = jobs[index];
-        ~writeManifestEntry.(
-            job[\filename],
-            job[\engine],
-            job[\parameters]
-        );
+        job = state[\jobs][state[\nextIndex]];
+        state[\nextIndex] = state[\nextIndex] + 1;
+        state[\active] = state[\active] + 1;
+
         ~renderSample.(
             job[\engine],
             job[\parameters],
             job[\filename],
             job[\duration],
-            {
-                ~runJobQueue.(jobs, index + 1);
+            { |outputPath, validation, finalParameters|
+                state[\active] = state[\active] - 1;
+                state[\completed] = state[\completed] + 1;
+                ~writeManifestEntry.(
+                    job, outputPath, validation, finalParameters
+                );
+                (
+                    "Progress: " ++ state[\completed]
+                    ++ "/" ++ state[\jobs].size
+                ).postln;
+                ~pumpJobQueue.();
+            },
+            { |message|
+                state[\active] = state[\active] - 1;
+                state[\failures].add((job: job, error: message));
+                ~writeManifestFailure.(job, message);
+                ("Render failed: " ++ job[\filename] ++ " - " ++ message).warn;
+                ~pumpJobQueue.();
             }
         );
-    };
+    });
+
+    ~finishGenerationIfReady.();
 };
 
-~start = {
+~start = { |engineNames|
     var jobs;
     if(~generationRunning == true) {
         "A generation job is already running.".warn;
     } {
-        ~generationRunning = true;
-        ~resetManifest.();
-        jobs = ~makeJobs.();
-        ("Starting " ++ jobs.size ++ " renders...").postln;
-        ~runJobQueue.(jobs);
+        try {
+            jobs = ~planJobs.(engineNames);
+            ~prepareRun.(jobs);
+            ~generationState = (
+                jobs: jobs,
+                nextIndex: 0,
+                active: 0,
+                completed: 0,
+                failures: List.new,
+                cancelled: false
+            );
+            ~generationRunning = true;
+            ("Starting " ++ jobs.size ++ " renders with up to "
+                ++ ~runtimeConfig[\maxConcurrentRenders]
+                ++ " workers...").postln;
+            ~pumpJobQueue.();
+        } { |error|
+            ~generationRunning = false;
+            error.reportError;
+        };
+    };
+};
+
+~generateEngine = { |engineName| ~start.([engineName]) };
+
+~cancelGeneration = {
+    if(~generationRunning == true) {
+        ~generationState[\cancelled] = true;
+        "Cancellation requested; active renders will finish.".postln;
+        ~finishGenerationIfReady.();
+    } {
+        "No generation job is running.".warn;
     };
 };
 )

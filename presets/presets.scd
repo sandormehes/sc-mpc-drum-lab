@@ -60,19 +60,71 @@
     )
 );
 
-~renderPreset = {
-    |presetName, filename|
+~renderSound = {
+    |sound, filename|
+    var job, outputName;
+    if(~generationRunning == true) {
+        "A generation job is already running.".warn;
+    } {
+        try {
+            outputName = filename ? sound[\filename];
+            if(outputName.find("/").notNil
+                or: { outputName.find("\\").notNil }) {
+                Error("Preset filename must not contain a directory path.").throw;
+            };
+
+            ~activateProfile.(~config[\activeProfile]);
+            job = (
+                family: \preset,
+                engine: sound[\engine],
+                parameters: sound[\parameters],
+                filename: outputName,
+                duration: sound[\duration]
+            );
+            ~prepareRun.([job]);
+            ~generationRunning = true;
+
+            ~renderSample.(
+            job[\engine], job[\parameters], job[\filename], job[\duration],
+            { |outputPath, validation, finalParameters|
+                var state;
+                state = (
+                    completed: 1, failures: List.new, cancelled: false
+                );
+                ~writeManifestEntry.(
+                    job, outputPath, validation, finalParameters
+                );
+                ~finalizeManifest.(state);
+                ~generationRunning = false;
+                ("Preset written to: " ++ outputPath).postln;
+            },
+            { |message|
+                var failures, state;
+                failures = List.new;
+                failures.add((job: job, error: message));
+                state = (
+                    completed: 0, failures: failures, cancelled: false
+                );
+                ~writeManifestFailure.(job, message);
+                ~finalizeManifest.(state);
+                ~generationRunning = false;
+                ("Preset render failed: " ++ message).warn;
+            }
+            );
+        } { |error|
+            ~generationRunning = false;
+            error.reportError;
+        };
+    };
+};
+
+~renderPreset = { |presetName, filename|
     var preset;
     preset = ~presets[presetName];
     if(preset.isNil) {
         Error("Unknown preset: " ++ presetName).throw;
     };
-    ~renderSample.(
-        preset[\engine],
-        preset[\parameters],
-        filename ? preset[\filename],
-        preset[\duration]
-    );
+    ~renderSound.(preset, filename);
 };
 
 ~presetVariation = {
