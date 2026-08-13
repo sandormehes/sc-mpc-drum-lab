@@ -75,5 +75,3 @@ if(sourcePath.notNil) {
     );
 };
 )
-
-~start.();
