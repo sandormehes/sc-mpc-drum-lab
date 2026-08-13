@@ -1,4 +1,5 @@
-// Render two samples concurrently and exercise promotion, validation, and manifests.
+// Render the focused percussion voices and exercise promotion, validation,
+// concurrency, and manifests.
 
 (
 var projectRoot;
@@ -10,9 +11,9 @@ try {
     (projectRoot +/+ "main.scd").load;
 
     ~config[\activeProfile] = \thickClub;
-    ~config[\samplesPerEngine] = 2;
+    ~config[\samplesPerEngine] = 1;
     ~config[\maxConcurrentRenders] = 2;
-    ~start.([\dancehallKick]);
+    ~start.([\gqomTom, \dancehallRim, \grimeHat, \dancehallShaker]);
 
     Routine({
         var passed;
@@ -20,12 +21,18 @@ try {
 
         passed = ~generationState.notNil
             and: { ~generationState[\failures].isEmpty }
-            and: { ~generationState[\completed] == 2 }
+            and: { ~generationState[\completed] == 4 }
             and: {
-                File.exists(~currentRunDirectory +/+ "DHKICK_001.wav")
+                File.exists(~currentRunDirectory +/+ "GQTOM_001.wav")
             }
             and: {
-                File.exists(~currentRunDirectory +/+ "DHKICK_002.wav")
+                File.exists(~currentRunDirectory +/+ "DHRIM_001.wav")
+            }
+            and: {
+                File.exists(~currentRunDirectory +/+ "GRHAT_001.wav")
+            }
+            and: {
+                File.exists(~currentRunDirectory +/+ "DHSHAKE_001.wav")
             };
 
         if(passed) {

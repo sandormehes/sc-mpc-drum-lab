@@ -293,12 +293,96 @@
     }
 );
 
+// Low tuned drums for gqom-style rolling patterns and call-and-response with
+// the kick. Kept above sub range so they layer without swallowing headroom.
+~generatorSpecs[\gqomTom] = (
+    synth: \clubTom,
+    prefix: "GQTOM",
+    duration: 1.1,
+    generator: {
+        (
+            amp: 0.72,
+            frequency: exprand(78.0, 145.0),
+            decay: rrand(0.25, 0.56),
+            pitchAmount: rrand(1.35, 2.5),
+            pitchDecay: rrand(0.018, 0.055),
+            harmonicAmount: rrand(0.08, 0.28),
+            skinAmount: rrand(0.04, 0.20),
+            drive: rrand(1.3, 2.2),
+            lowBoost: rrand(0.5, 3.0),
+            bits: [12, 14, 16].choose,
+            sampleRateReduction: [22050, 32000, 44100].choose
+        )
+    }
+);
+
+// Dry wooden side-stick and rim tones suited to sparse dancehall patterns.
+~generatorSpecs[\dancehallRim] = (
+    synth: \woodRim,
+    prefix: "DHRIM",
+    duration: 0.6,
+    generator: {
+        (
+            amp: 0.66,
+            frequency: exprand(520.0, 1050.0),
+            decay: rrand(0.045, 0.14),
+            tone: rrand(0.15, 0.75),
+            noiseAmount: rrand(0.06, 0.24),
+            drive: rrand(1.2, 2.0),
+            bits: [12, 14, 16].choose,
+            sampleRateReduction: [22050, 32000, 44100].choose
+        )
+    }
+);
+
+// Tight high-frequency timekeepers, from clean hats to slightly degraded
+// grime ticks. Their short envelopes leave room for the snares and rims.
+~generatorSpecs[\grimeHat] = (
+    synth: \closedHat,
+    prefix: "GRHAT",
+    duration: 0.5,
+    generator: {
+        (
+            amp: 0.58,
+            decay: rrand(0.035, 0.13),
+            metallicTone: exprand(5200.0, 9200.0),
+            noiseAmount: rrand(0.45, 0.78),
+            metalAmount: rrand(0.20, 0.58),
+            brightness: rrand(0.25, 0.9),
+            drive: rrand(1.15, 1.8),
+            bits: [12, 14, 16].choose,
+            sampleRateReduction: [16000, 22050, 32000, 44100].choose
+        )
+    }
+);
+
+// Looser, grainy top loops and off-beat accents; intentionally longer and
+// softer than the hats so both families remain useful in the same kit.
+~generatorSpecs[\dancehallShaker] = (
+    synth: \clubShaker,
+    prefix: "DHSHAKE",
+    duration: 0.8,
+    generator: {
+        (
+            amp: 0.62,
+            decay: rrand(0.14, 0.38),
+            grainRate: rrand(22.0, 58.0),
+            tone: exprand(4600.0, 9000.0),
+            spread: rrand(0.15, 0.85),
+            bodyAmount: rrand(0.06, 0.24),
+            drive: rrand(1.05, 1.6),
+            bits: [12, 14, 16].choose,
+            sampleRateReduction: [22050, 32000, 44100].choose
+        )
+    }
+);
+
 // Profile data is registered without mutating configuration or replacing the
 // shared job planner. Explicit values in config.scd override these defaults.
 ~profiles[\thickClub] = (
     displayName: "Thick 2000s Club",
     defaults: (
-        samplesPerEngine: 8,
+        samplesPerEngine: 6,
         masterAmp: 0.92,
         enabledEngines: [
             \dancehallKick,
@@ -306,7 +390,11 @@
             \gqomKick,
             \dancehallSnare,
             \grimeSnare,
-            \gqomPerc
+            \gqomPerc,
+            \gqomTom,
+            \dancehallRim,
+            \grimeHat,
+            \dancehallShaker
         ]
     )
 );

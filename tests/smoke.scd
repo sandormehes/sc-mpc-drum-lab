@@ -25,7 +25,7 @@ try {
 
     ~config[\activeProfile] = \thickClub;
     thickJobs = ~planJobs.();
-    assert.(thickJobs.size == 48, "thickClub profile should plan 48 jobs");
+    assert.(thickJobs.size == 60, "thickClub profile should plan 60 jobs");
     assert.(
         thickJobs[0][\filename] == "DHKICK_001.wav",
         "thickClub filenames should be zero-padded"
@@ -42,8 +42,19 @@ try {
     );
     assert.(
         ~drumDefs[\experimentalKick].notNil
-        and: { ~drumDefs[\thickClubKick].notNil },
+        and: { ~drumDefs[\thickClubKick].notNil }
+        and: { ~drumDefs[\clubTom].notNil }
+        and: { ~drumDefs[\woodRim].notNil }
+        and: { ~drumDefs[\closedHat].notNil }
+        and: { ~drumDefs[\clubShaker].notNil },
         "original and profile engines should coexist"
+    );
+    assert.(
+        thickJobs.select { |job|
+            [\gqomPerc, \gqomTom, \dancehallRim,
+                \grimeHat, \dancehallShaker].includes(job[\family])
+        }.size == 30,
+        "half of the thickClub pack should be percussion"
     );
 
     "SC MPC Drum Lab smoke tests passed.".postln;

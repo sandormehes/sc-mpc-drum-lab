@@ -32,8 +32,10 @@ its own run directory and includes a validation-aware manifest.
 ```
 
 Loading `main.scd` does not render or overwrite audio unless `autoStart` is
-explicitly enabled. The default `thickClub` profile plans 48 samples: eight
-from each of six focused dancehall, grime, and gqom families.
+explicitly enabled. The default `thickClub` profile plans 60 samples: six from
+each of ten focused dancehall, grime, and gqom families. Half of the pack is
+kick/snare material; the other half is metallic percussion, low toms, wooden
+rims, closed hats, and grainy shakers.
 
 Generate one family only:
 
@@ -78,7 +80,7 @@ and environment needed to diagnose differences between renders.
 
 Two profiles are available:
 
-- `\thickClub` — 48 focused dancehall, grime, and gqom samples by default
+- `\thickClub` — 60 balanced dancehall, grime, and gqom samples by default
 - `\original` — 60 broad experimental samples by default
 
 Select one in `config.scd`:
@@ -185,7 +187,8 @@ SCLANG_BIN=/full/path/to/sclang ./scripts/test.sh
 
 GitHub Actions runs the same smoke test on pushes and pull requests. Full audio
 validation happens automatically during every local render. To exercise the
-entire offline-rendering path with two concurrent kicks:
+entire offline-rendering path with the four focused percussion voices (using
+two concurrent workers):
 
 ```sh
 ./scripts/test.sh tests/render_smoke.scd

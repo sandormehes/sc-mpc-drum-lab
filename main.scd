@@ -28,6 +28,7 @@ loadProject = { |projectDirectory|
     (projectDirectory +/+ "synthdefs/metal.scd").load;
     (projectDirectory +/+ "synthdefs/glitch.scd").load;
     (projectDirectory +/+ "synthdefs/resonator.scd").load;
+    (projectDirectory +/+ "synthdefs/club_perc.scd").load;
 
     // Rendering and generation system.
     (projectDirectory +/+ "lib/renderer.scd").load;
@@ -74,3 +75,5 @@ if(sourcePath.notNil) {
     );
 };
 )
+
+~start.();
