@@ -17,6 +17,8 @@ try {
 
     Routine({
         var exportDirectory, favorites, passed, recipe, replayJobs;
+        var variationJob, variationOptions, variationRecipe;
+        var variationRecipePath;
         while({ ~generationRunning == true }, { 0.1.wait });
 
         recipe = ~recipePath.load;
@@ -59,6 +61,52 @@ try {
             and: {
                 File.exists(exportDirectory +/+ "favorites_manifest.txt")
             };
+
+        if(passed) {
+            variationOptions = recipe[\options];
+            variationJob = ~makeVariationJob.(
+                ~generationState[\jobs][0],
+                (pitch: true, envelope: false, texture: false, dirt: true),
+                0.2,
+                991177,
+                1,
+                variationOptions
+            );
+            ~startJobs.([variationJob], variationOptions);
+            while({ ~generationRunning == true }, { 0.1.wait });
+            variationRecipePath = ~recipePath;
+            variationRecipe = ~recipePath.load;
+            passed = ~generationState[\failures].isEmpty
+                and: { ~generationState[\completed] == 1 }
+                and: { variationRecipe[\kind] == \jobs }
+                and: {
+                    variationRecipe[\jobs][0][\parameters][\seed]
+                        == variationJob[\parameters][\seed]
+                }
+                and: {
+                    (
+                        variationRecipe[\jobs][0][\parameters][\frequency]
+                        - variationJob[\parameters][\frequency]
+                    ).abs < 0.000001
+                }
+                and: {
+                    File.exists(~currentRunDirectory +/+ "GQTOMV_001.wav")
+                };
+        };
+
+        if(passed) {
+            ~replayRecipe.(variationRecipePath);
+            while({ ~generationRunning == true }, { 0.1.wait });
+            passed = ~generationState[\failures].isEmpty
+                and: { ~generationState[\completed] == 1 }
+                and: {
+                    ~generationState[\jobs][0][\parameters][\seed]
+                        == variationJob[\parameters][\seed]
+                }
+                and: {
+                    File.exists(~currentRunDirectory +/+ "GQTOMV_001.wav")
+                };
+        };
 
         if(passed) {
             "SC MPC Drum Lab render smoke test passed.".postln;

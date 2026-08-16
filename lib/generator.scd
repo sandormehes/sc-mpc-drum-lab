@@ -340,6 +340,98 @@
     result;
 };
 
+~parameterLockGroups = (
+    pitch: [
+        \frequency, \pitchAmount, \pitchBounce, \pitchDecay,
+        \fmRatio, \ringRatio, \punchRatio
+    ],
+    envelope: [
+        \decay, \punchDecay, \combDecay, \resonance
+    ],
+    texture: [
+        \bodyAmount, \noiseAmount, \noiseTone, \noiseWidth,
+        \clickAmount, \clickTone, \clapAmount, \ringAmount,
+        \fmAmount, \harmonicAmount, \exciterAmount,
+        \inharmonicity, \metalAmount, \metallicTone,
+        \brightness, \grainRate, \spread, \skinAmount, \tone
+    ],
+    dirt: [
+        \drive, \foldAmount, \bits, \sampleRateReduction,
+        \combAmount, \combTime
+    ]
+);
+
+~makeVariationJob = {
+    |sourceJob, locks, amount = 0.25, seed, variationIndex = 1, options|
+    var isLocked, parameters, profileName, sourceParameters, spec;
+
+    if(sourceJob.isNil) { Error("Select a candidate first.").throw };
+    spec = ~generatorSpecs[sourceJob[\family]];
+    if(spec.isNil) {
+        Error("Cannot vary unknown family: " ++ sourceJob[\family]).throw;
+    };
+
+    if(options.notNil) {
+        profileName = options[\activeProfile] ? ~config[\activeProfile];
+        ~activateProfile.(profileName, options);
+    };
+    amount = amount.asFloat.clip(0.02, 1);
+    seed = seed ? ~jobSeed.(sourceJob[\family], variationIndex + 1000);
+    thisThread.randSeed = seed;
+    parameters = ~applyMusicalMacros.(
+        spec[\generator].value, ~runtimeConfig[\macros]
+    );
+    sourceParameters = sourceJob[\parameters];
+
+    sourceParameters.keysValuesDo { |key, sourceValue|
+        var proposedValue;
+        proposedValue = parameters[key];
+        if(key != \seed and: { proposedValue.notNil }) {
+            parameters[key] = if(sourceValue.isNumber
+                and: { proposedValue.isNumber }) {
+                sourceValue + ((proposedValue - sourceValue) * amount)
+            } {
+                if(amount >= 0.5) { proposedValue } { sourceValue }
+            };
+        };
+    };
+
+    isLocked = { |group|
+        if(locks.isKindOf(Dictionary)) {
+            locks[group] == true or: { locks[group] == 1 }
+        } {
+            locks.notNil and: { locks.asArray.includes(group) }
+        };
+    };
+    ~parameterLockGroups.keysValuesDo { |group, keys|
+        if(isLocked.(group)) {
+            keys.do { |key|
+                if(sourceParameters[key].notNil) {
+                    parameters[key] = sourceParameters[key];
+                };
+            };
+        };
+    };
+    if(parameters[\bits].notNil) {
+        parameters[\bits] = parameters[\bits].round.asInteger;
+    };
+    parameters[\seed] = seed.asInteger;
+
+    (
+        family: sourceJob[\family],
+        engine: spec[\synth],
+        parameters: parameters,
+        filename: ~sampleFilename.(
+            spec[\prefix] ++ "V", variationIndex
+        ),
+        duration: sourceJob[\duration] ? spec[\duration],
+        custom: true,
+        variationOf: sourceJob[\filename],
+        locks: locks.deepCopy,
+        mutationAmount: amount
+    );
+};
+
 ~zeroPadNumber = { |number, width = 3|
     var result;
     result = number.asInteger.asString;
@@ -594,32 +686,59 @@
     ~finishGenerationIfReady.();
 };
 
+~launchJobs = { |jobs|
+    ~prepareRun.(jobs);
+    ~generationState = (
+        jobs: jobs,
+        nextIndex: 0,
+        active: 0,
+        completed: 0,
+        failures: List.new,
+        cancelled: false
+    );
+    ~generationRunning = true;
+    ~notifyGeneration.(\started, (
+        total: jobs.size,
+        outputDirectory: ~currentRunDirectory,
+        profile: ~activeProfile
+    ));
+    ("Starting " ++ jobs.size ++ " renders with up to "
+        ++ ~runtimeConfig[\maxConcurrentRenders]
+        ++ " workers...").postln;
+    ~pumpJobQueue.();
+};
+
 ~start = { |engineNames, options|
-    var jobs;
     if(~generationRunning == true) {
         "A generation job is already running.".warn;
     } {
         try {
-            jobs = ~planJobs.(engineNames, options);
-            ~prepareRun.(jobs);
-            ~generationState = (
-                jobs: jobs,
-                nextIndex: 0,
-                active: 0,
-                completed: 0,
-                failures: List.new,
-                cancelled: false
-            );
-            ~generationRunning = true;
-            ~notifyGeneration.(\started, (
-                total: jobs.size,
-                outputDirectory: ~currentRunDirectory,
-                profile: ~activeProfile
-            ));
-            ("Starting " ++ jobs.size ++ " renders with up to "
-                ++ ~runtimeConfig[\maxConcurrentRenders]
-                ++ " workers...").postln;
-            ~pumpJobQueue.();
+            ~launchJobs.(~planJobs.(engineNames, options));
+        } { |error|
+            ~generationRunning = false;
+            error.reportError;
+        };
+    };
+};
+
+~startJobs = { |jobs, options|
+    var profileName;
+    if(~generationRunning == true) {
+        "A generation job is already running.".warn;
+    } {
+        try {
+            if(jobs.isArray.not or: { jobs.isEmpty }) {
+                Error("Custom jobs must be a non-empty Array.").throw;
+            };
+            profileName = if(options.notNil) { options[\activeProfile] };
+            profileName = profileName ? ~config[\activeProfile];
+            ~activateProfile.(profileName, options);
+            jobs.do { |job|
+                if(~drumDefs[job[\engine]].isNil) {
+                    Error("Unknown custom-job engine: " ++ job[\engine]).throw;
+                };
+            };
+            ~launchJobs.(jobs.deepCopy);
         } { |error|
             ~generationRunning = false;
             error.reportError;
@@ -661,6 +780,7 @@
                 recipe[\sound], recipe[\sound][\filename], recipe[\options]
             )
         },
+        \jobs, { ~startJobs.(recipe[\jobs], recipe[\options]) },
         { ~start.(nil, recipe) }
     );
 };

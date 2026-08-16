@@ -10,12 +10,28 @@ projectRoot = File.realpath(
 
 {
     try {
-        var window;
+        var browser, options, window;
         window = ~openDrumLab.();
         if(window.isNil) {
             Error("GUI smoke test failed: no Window was returned.").throw;
         };
+        options = (
+            activeProfile: \thickClub,
+            randomSeed: 26071986,
+            samplesPerEngine: 8,
+            enabledEngines: [\dancehallKick],
+            engineCounts: (dancehallKick: 8),
+            macros: (
+                weight: 0.5, punch: 0.5, brightness: 0.5,
+                tail: 0.5, dirt: 0.5
+            )
+        );
+        browser = ~openCandidateBrowser.(\dancehallKick, options);
+        if(browser.isNil) {
+            Error("GUI smoke test failed: no candidate browser was returned.").throw;
+        };
         "SC MPC Drum Lab GUI smoke test passed.".postln;
+        browser.close;
         window.close;
         0.exit;
     } { |error|

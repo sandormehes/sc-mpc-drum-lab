@@ -74,13 +74,381 @@
                 filename: filename,
                 family: favorite[\job][\family],
                 source: favorite[\outputPath],
-                parameters: favorite[\job][\parameters]
+                parameters: favorite[\job][\parameters],
+                variationOf: favorite[\job][\variationOf],
+                locks: favorite[\job][\locks],
+                mutationAmount: favorite[\job][\mutationAmount]
             ).asCompileString ++ "\n");
         };
     } {
         file.close;
     };
     candidate;
+};
+
+~candidateSummary = { |job|
+    var keys, parameters, parts, result;
+    result = if(job.isNil) {
+        "No candidate selected."
+    } {
+        parameters = job[\parameters];
+        keys = [
+            \frequency, \decay, \bodyAmount, \noiseAmount,
+            \brightness, \drive, \bits, \sampleRateReduction
+        ];
+        parts = List.new;
+        keys.do { |key|
+            var value;
+            value = parameters[key];
+            if(value.notNil) {
+                if(value.isFloat) { value = value.round(0.001) };
+                parts.add(key.asString ++ ": " ++ value);
+            };
+        };
+        parts.join("   ");
+    };
+    result;
+};
+
+~openCandidateBrowser = { |engineName, options, onFavoritesChanged|
+    var activeMode, amountSlider, batchCounter, browserListener, candidates;
+    var cancelButton, exportButton, favorites, generateButton, keepButton;
+    var lockBoxes, padButtons, progress, refresh, rejectButton, selectedIndex;
+    var selectionText;
+    var setBusy, setStatus, spec, statusText, variationButton;
+    var variationCounter, window;
+
+    spec = ~generatorSpecs[engineName];
+    if(spec.isNil) { Error("Unknown family: " ++ engineName).throw };
+    if(~candidateBrowserWindow.notNil) {
+        try { ~candidateBrowserWindow.close } { };
+    };
+
+    candidates = Array.newClear(8);
+    padButtons = Array.newClear(8);
+    favorites = ~drumLabFavorites ? List.new;
+    ~drumLabFavorites = favorites;
+    lockBoxes = IdentityDictionary.new;
+    selectedIndex = nil;
+    activeMode = nil;
+    batchCounter = 0;
+    variationCounter = 0;
+
+    window = Window(
+        "Explore " ++ (spec[\label] ? engineName.asString),
+        Rect(150, 90, 840, 600),
+        resizable: false
+    );
+    ~candidateBrowserWindow = window;
+
+    StaticText(window, Rect(20, 15, 500, 28))
+        .string_("Explore " ++ (spec[\label] ? engineName.asString))
+        .font_(Font.default.boldVariant.size_(20));
+    StaticText(window, Rect(20, 45, 790, 24))
+        .string_(spec[\description] ? "");
+
+    setStatus = { |message|
+        { statusText.string = message }.defer;
+    };
+    setBusy = { |busy|
+        {
+            generateButton.enabled = busy.not;
+            cancelButton.enabled = busy;
+            variationButton.enabled = busy.not and: { selectedIndex.notNil };
+            rejectButton.enabled = busy.not and: { selectedIndex.notNil };
+            keepButton.enabled = busy.not
+                and: { selectedIndex.notNil }
+                and: { favorites.size < 16 };
+            lockBoxes.values.do { |box| box.enabled = busy.not };
+            amountSlider.enabled = busy.not;
+        }.defer;
+    };
+
+    refresh = {
+        {
+            var favoriteIndex, selectedCandidate;
+            padButtons.do { |button, index|
+                var candidate, isFavorite, label;
+                candidate = candidates[index];
+                label = if(candidate.isNil) {
+                    (index + 1).asString ++ "\nEmpty"
+                } {
+                    isFavorite = favorites.detect { |favorite|
+                        favorite[\outputPath] == candidate[\outputPath]
+                    }.notNil;
+                    (if(selectedIndex == index) { "> " } { "" })
+                        ++ (index + 1).asString ++ "  "
+                        ++ candidate[\job][\filename]
+                        ++ (if(isFavorite) { "  [KEPT]" } { "" })
+                };
+                button.states = [[label]];
+            };
+            selectionText.string = if(selectedIndex.notNil
+                and: { candidates[selectedIndex].notNil }) {
+                ~candidateSummary.(candidates[selectedIndex][\job])
+            } {
+                "Select a rendered candidate to inspect it."
+            };
+            selectedCandidate = if(selectedIndex.notNil) {
+                candidates[selectedIndex]
+            };
+            favoriteIndex = if(selectedCandidate.notNil) {
+                favorites.detectIndex { |favorite|
+                    favorite[\outputPath] == selectedCandidate[\outputPath]
+                }
+            };
+            keepButton.states = [[
+                (if(favoriteIndex.notNil) { "Unkeep" } { "Keep" })
+                ++ " (" ++ favorites.size ++ "/16)"
+            ]];
+            keepButton.enabled = selectedCandidate.notNil
+                and: {
+                    favoriteIndex.notNil or: { favorites.size < 16 }
+                }
+                and: { ~generationRunning != true };
+            rejectButton.enabled = selectedIndex.notNil
+                and: { ~generationRunning != true };
+            variationButton.enabled = selectedIndex.notNil
+                and: { ~generationRunning != true };
+            exportButton.enabled = favorites.notEmpty;
+        }.defer;
+    };
+
+    generateButton = Button(window, Rect(20, 76, 160, 32))
+        .states_([["Generate 8 candidates"]])
+        .action_({
+            var batchOptions, counts;
+            if(~generationRunning == true) {
+                setStatus.("Another render is already running.");
+            } {
+                batchCounter = batchCounter + 1;
+                candidates = Array.newClear(8);
+                selectedIndex = nil;
+                refresh.();
+                counts = IdentityDictionary.new;
+                counts[engineName] = 8;
+                batchOptions = options.deepCopy;
+                batchOptions[\enabledEngines] = [engineName];
+                batchOptions[\engineCounts] = counts;
+                batchOptions[\samplesPerEngine] = 8;
+                batchOptions[\randomSeed] = options[\randomSeed]
+                    + ((batchCounter - 1) * 1000);
+                activeMode = \batch;
+                setStatus.("Rendering eight candidates...");
+                ~start.([engineName], batchOptions);
+            };
+        });
+
+    cancelButton = Button(window, Rect(190, 76, 100, 32))
+        .states_([["Cancel"]])
+        .enabled_(false)
+        .action_({ ~cancelGeneration.() });
+
+    StaticText(window, Rect(310, 81, 360, 20))
+        .string_("Click a pad to select and audition it.");
+
+    8.do { |index|
+        var column, left, row, top;
+        column = index % 4;
+        row = (index / 4).floor;
+        left = 20 + (column * 200);
+        top = 122 + (row * 82);
+        padButtons[index] = Button(window, Rect(left, top, 185, 66))
+            .states_([[(index + 1).asString ++ "\nEmpty"]])
+            .action_({
+                var candidate;
+                candidate = candidates[index];
+                if(candidate.notNil) {
+                    selectedIndex = index;
+                    refresh.();
+                    ~playRenderedFile.(candidate[\outputPath]);
+                    setStatus.("Playing " ++ candidate[\job][\filename]);
+                };
+            });
+    };
+
+    StaticText(window, Rect(20, 294, 800, 20))
+        .string_("Selected sound")
+        .font_(Font.default.boldVariant);
+    selectionText = StaticText(window, Rect(20, 316, 800, 42))
+        .string_("Select a rendered candidate to inspect it.");
+
+    StaticText(window, Rect(20, 366, 190, 20))
+        .string_("Lock while creating variations")
+        .font_(Font.default.boldVariant);
+    [
+        [\pitch, "Pitch"],
+        [\envelope, "Envelope"],
+        [\texture, "Texture"],
+        [\dirt, "Dirt"]
+    ].do { |pair, index|
+        lockBoxes[pair[0]] = CheckBox(
+            window, Rect(220 + (index * 120), 364, 110, 24)
+        ).string_(pair[1]).value_(0);
+    };
+
+    StaticText(window, Rect(20, 402, 125, 20)).string_("Variation distance");
+    amountSlider = Slider(window, Rect(148, 402, 230, 20)).value_(0.25);
+    StaticText(window, Rect(390, 402, 380, 20))
+        .string_("Small = close sibling; large = stronger mutation.");
+
+    variationButton = Button(window, Rect(20, 438, 170, 34))
+        .states_([["Create close variation"]])
+        .enabled_(false)
+        .action_({
+            var candidate, locks, mutationSeed, variationJob;
+            if(selectedIndex.notNil and: { ~generationRunning != true }) {
+                candidate = candidates[selectedIndex];
+                locks = IdentityDictionary.new;
+                lockBoxes.keysValuesDo { |name, box|
+                    locks[name] = box.value == 1;
+                };
+                variationCounter = variationCounter + 1;
+                mutationSeed = options[\randomSeed]
+                    + 100000 + (variationCounter * 7919);
+                variationJob = ~makeVariationJob.(
+                    candidate[\job], locks, amountSlider.value,
+                    mutationSeed, variationCounter, options
+                );
+                activeMode = \variation;
+                setStatus.("Rendering a close variation...");
+                ~startJobs.([variationJob], options);
+            };
+        });
+
+    keepButton = Button(window, Rect(202, 438, 125, 34))
+        .states_([["Keep (0/16)"]])
+        .enabled_(false)
+        .action_({
+            var candidate, favoriteIndex;
+            candidate = if(selectedIndex.notNil) { candidates[selectedIndex] };
+            if(candidate.notNil) {
+                favoriteIndex = favorites.detectIndex { |favorite|
+                    favorite[\outputPath] == candidate[\outputPath]
+                };
+                if(favoriteIndex.notNil) {
+                    favorites.removeAt(favoriteIndex);
+                    setStatus.("Removed from favorites: "
+                        ++ candidate[\job][\filename]);
+                } {
+                    if(favorites.size < 16) {
+                        favorites.add(candidate.copy);
+                        setStatus.("Added to favorites: "
+                            ++ candidate[\job][\filename]);
+                    };
+                };
+                if(onFavoritesChanged.notNil) {
+                    onFavoritesChanged.value;
+                };
+                refresh.();
+            };
+        });
+
+    rejectButton = Button(window, Rect(339, 438, 110, 34))
+        .states_([["Reject"]])
+        .enabled_(false)
+        .action_({
+            if(selectedIndex.notNil) {
+                var candidate, favoriteIndex;
+                candidate = candidates[selectedIndex];
+                favoriteIndex = favorites.detectIndex { |favorite|
+                    favorite[\outputPath] == candidate[\outputPath]
+                };
+                if(favoriteIndex.notNil) {
+                    favorites.removeAt(favoriteIndex);
+                    if(onFavoritesChanged.notNil) {
+                        onFavoritesChanged.value;
+                    };
+                };
+                candidates[selectedIndex] = nil;
+                selectedIndex = nil;
+                refresh.();
+                setStatus.("Candidate removed from this browser view.");
+            };
+        });
+
+    exportButton = Button(window, Rect(461, 438, 165, 34))
+        .states_([["Export favorites"]])
+        .enabled_(favorites.isEmpty.not)
+        .action_({
+            try {
+                var path;
+                path = ~exportDrumLabFavorites.(favorites);
+                setStatus.("Favorites exported to " ++ path);
+                path.openOS;
+            } { |error| setStatus.(error.errorString) };
+        });
+
+    Button(window, Rect(638, 438, 170, 34))
+        .states_([["Play selected"]])
+        .action_({
+            if(selectedIndex.notNil) {
+                ~playRenderedFile.(candidates[selectedIndex][\outputPath]);
+            };
+        });
+
+    statusText = StaticText(window, Rect(20, 494, 800, 54))
+        .string_("Ready to generate candidates.");
+    progress = Slider(window, Rect(20, 558, 800, 16))
+        .enabled_(false);
+
+    browserListener = { |event, data|
+        {
+            if(activeMode.notNil) {
+                switch(event,
+                    \started, {
+                        progress.value = 0;
+                        setBusy.(true);
+                    },
+                    \rendered, {
+                        var targetIndex;
+                        if(data[\job][\family] == engineName) {
+                            targetIndex = candidates.detectIndex { |item|
+                                item.isNil
+                            };
+                            if(targetIndex.isNil) {
+                                targetIndex = selectedIndex ? 0;
+                            };
+                            candidates[targetIndex] = data.copy;
+                            selectedIndex = targetIndex;
+                            progress.value = data[\completed] / data[\total];
+                            refresh.();
+                            if(activeMode == \variation) {
+                                ~playRenderedFile.(data[\outputPath]);
+                            };
+                            setStatus.("Rendered " ++ data[\completed]
+                                ++ " of " ++ data[\total] ++ ".");
+                        };
+                    },
+                    \failed, {
+                        setStatus.("Render failed: " ++ data[\message]);
+                    },
+                    \finished, {
+                        progress.value = if(data[\total] > 0) {
+                            data[\completed] / data[\total]
+                        } { 0 };
+                        activeMode = nil;
+                        setBusy.(false);
+                        refresh.();
+                        setStatus.(if(data[\cancelled]) {
+                            "Candidate rendering cancelled."
+                        } {
+                            "Candidates ready. Select a pad to audition it."
+                        });
+                    }
+                );
+            };
+        }.defer;
+    };
+    ~addGenerationListener.(browserListener);
+
+    window.onClose = {
+        ~removeGenerationListener.(browserListener);
+        ~candidateBrowserWindow = nil;
+    };
+    refresh.();
+    window.front;
+    window;
 };
 
 ~openDrumLab = {
@@ -155,7 +523,7 @@
     StaticText(window, Rect(20, 220, 470, 22))
         .string_("Sound families")
         .font_(Font.default.boldVariant);
-    countLabel = StaticText(window, Rect(502, 220, 70, 22))
+    countLabel = StaticText(window, Rect(420, 220, 70, 22))
         .string_("Quantity");
 
     setStatus = { |message|
@@ -174,6 +542,7 @@
                 row[\enabled].enabled = busy.not;
                 row[\count].enabled = busy.not;
                 row[\preview].enabled = busy.not;
+                row[\explore].enabled = busy.not;
             };
             macroSliders.values.do { |slider| slider.enabled = busy.not };
         }.defer;
@@ -203,21 +572,21 @@
         familyScroll.hasBorder = true;
 
         engines.do { |engineName, index|
-            var check, count, preview, spec, top;
+            var check, count, explore, preview, spec, top;
             spec = ~generatorSpecs[engineName];
             top = 6 + (index * rowHeight);
-            check = CheckBox(familyScroll, Rect(8, top + 7, 180, 22))
+            check = CheckBox(familyScroll, Rect(8, top + 7, 165, 22))
                 .string_(spec[\label] ? engineName.asString)
                 .value_(1);
-            StaticText(familyScroll, Rect(30, top + 28, 440, 18))
+            StaticText(familyScroll, Rect(30, top + 28, 375, 18))
                 .string_(spec[\description] ? "")
                 .font_(Font.default.size_(11));
-            count = NumberBox(familyScroll, Rect(486, top + 7, 64, 24))
+            count = NumberBox(familyScroll, Rect(420, top + 7, 58, 24))
                 .value_(defaults[\samplesPerEngine])
                 .decimals_(0)
                 .action_({ |box| box.value = box.value.asInteger.clip(1, 128) });
-            preview = Button(familyScroll, Rect(568, top + 7, 105, 24))
-                .states_([["Preview one"]])
+            preview = Button(familyScroll, Rect(490, top + 7, 88, 24))
+                .states_([["Preview"]])
                 .action_({
                     var counts, macros, options;
                     if(~generationRunning == true) {
@@ -246,10 +615,33 @@
                         ~generateEngine.(engineName, options);
                     };
                 });
+            explore = Button(familyScroll, Rect(590, top + 7, 88, 24))
+                .states_([["Explore..."]])
+                .action_({
+                    var counts, macros, options;
+                    counts = IdentityDictionary.new;
+                    counts[engineName] = 8;
+                    macros = IdentityDictionary.new;
+                    macroSliders.keysValuesDo { |name, slider|
+                        macros[name] = slider.value;
+                    };
+                    options = (
+                        activeProfile: profileSymbols[profileMenu.value],
+                        randomSeed: seedBox.value.asInteger,
+                        samplesPerEngine: 8,
+                        engineCounts: counts,
+                        enabledEngines: [engineName],
+                        macros: macros
+                    );
+                    ~openCandidateBrowser.(
+                        engineName, options, { setFavoriteButtons.() }
+                    );
+                });
             familyRows[engineName] = (
                 enabled: check,
                 count: count,
-                preview: preview
+                preview: preview,
+                explore: explore
             );
         };
     };

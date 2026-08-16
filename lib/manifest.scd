@@ -46,7 +46,7 @@
 };
 
 ~prepareRun = { |jobs|
-    var counts, families, file, git, recipe, recipeFile;
+    var counts, families, file, git, options, recipe, recipeFile;
     ~currentRunDirectory = ~createRunDirectory.();
     ~manifestPath = ~currentRunDirectory +/+ "sample_manifest.txt";
     ~recipePath = ~currentRunDirectory +/+ "recipe.scd";
@@ -92,6 +92,16 @@
         file.close;
     };
 
+    options = (
+        activeProfile: ~activeProfile,
+        randomSeed: ~runtimeConfig[\randomSeed],
+        samplesPerEngine: ~runtimeConfig[\samplesPerEngine],
+        engineCounts: counts,
+        enabledEngines: families.asArray,
+        macros: ~runtimeConfig[\macros],
+        masterAmp: ~runtimeConfig[\masterAmp],
+        maxConcurrentRenders: ~runtimeConfig[\maxConcurrentRenders]
+    );
     recipe = if(families.includes(\preset)) {
         (
             kind: \sound,
@@ -102,19 +112,18 @@
             )
         )
     } {
-        (
-            kind: \pack,
-            options: (
-                activeProfile: ~activeProfile,
-                randomSeed: ~runtimeConfig[\randomSeed],
-                samplesPerEngine: ~runtimeConfig[\samplesPerEngine],
-                engineCounts: counts,
-                enabledEngines: families.asArray,
-                macros: ~runtimeConfig[\macros],
-                masterAmp: ~runtimeConfig[\masterAmp],
-                maxConcurrentRenders: ~runtimeConfig[\maxConcurrentRenders]
+        if(jobs.any { |job| job[\custom] == true }) {
+            (
+                kind: \jobs,
+                jobs: jobs.deepCopy,
+                options: options
             )
-        )
+        } {
+            (
+                kind: \pack,
+                options: options
+            )
+        }
     };
     recipeFile = File(~recipePath, "w");
     if(recipeFile.isOpen.not) {
@@ -151,6 +160,10 @@
         duration: job[\duration],
         parameters: job[\parameters],
         effectiveParameters: finalParameters,
+        custom: job[\custom] ? false,
+        variationOf: job[\variationOf],
+        locks: job[\locks],
+        mutationAmount: job[\mutationAmount],
         validation: validation,
         outputPath: outputPath
     );

@@ -2,7 +2,8 @@
 
 (
 var assert, customJobs, filenames, macroJobs, originalJobs, projectRoot;
-var repeatJobs, selectedJobs, session, sessionJobs, thickJobs;
+var repeatJobs, repeatVariation, selectedJobs, session, sessionJobs, thickJobs;
+var variationJob;
 
 try {
     projectRoot = File.realpath(
@@ -81,6 +82,41 @@ try {
         macroJobs[0][\parameters][\amp]
             > customJobs[0][\parameters][\amp],
         "weight macro should increase effective source weight"
+    );
+    variationJob = ~makeVariationJob.(
+        thickJobs[0],
+        (pitch: true, envelope: false, texture: false, dirt: true),
+        0.25,
+        990011,
+        1,
+        (activeProfile: \thickClub)
+    );
+    repeatVariation = ~makeVariationJob.(
+        thickJobs[0],
+        (pitch: true, envelope: false, texture: false, dirt: true),
+        0.25,
+        990011,
+        1,
+        (activeProfile: \thickClub)
+    );
+    assert.(variationJob[\custom] == true, "variations should be exact custom jobs");
+    assert.(
+        variationJob[\parameters][\frequency]
+            == thickJobs[0][\parameters][\frequency],
+        "pitch lock should preserve frequency"
+    );
+    assert.(
+        variationJob[\parameters][\drive]
+            == thickJobs[0][\parameters][\drive],
+        "dirt lock should preserve drive"
+    );
+    assert.(
+        variationJob[\parameters] == repeatVariation[\parameters],
+        "a variation should be reproducible from its mutation seed"
+    );
+    assert.(
+        variationJob[\filename] == "DHKICKV_001.wav",
+        "variation filenames should remain MPC-safe"
     );
 
     session = ~newDrumSession.((

@@ -81,3 +81,5 @@ if(sourcePath.notNil) {
     );
 };
 )
+
+~openDrumLab.()

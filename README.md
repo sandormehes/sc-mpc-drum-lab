@@ -21,8 +21,8 @@ its own run directory and includes a validation-aware manifest.
    - Windows/Linux: `Ctrl+A`, then `Ctrl+Enter`
 3. Choose a profile, enable the sound families you want, and set a quantity for
    each family.
-4. Use **Preview one** to audition a family, or **Generate selected kit** to
-   render the complete selection.
+4. Use **Preview** for one sound, **Explore** for an eight-candidate browser, or
+   **Generate selected kit** to render the complete selection.
 
 The control panel shows live progress and can open the finished output folder.
 Preview files use the same validated offline renderer as final samples, so the
@@ -39,6 +39,23 @@ Five musical controls provide consistent direction across sound families:
 - **Dirt** coordinates drive, folding, bit depth, and sample-rate reduction.
 
 Their center positions preserve the profile's original parameter ranges.
+
+### Candidate browser and close variations
+
+Select **Explore** beside any sound family to open the v0.4 candidate browser:
+
+1. Generate eight candidates.
+2. Click any pad to select and audition its rendered WAV.
+3. Keep useful candidates, or reject them from the browser view.
+4. Adjust **Variation distance** and create a close sibling.
+5. Lock **Pitch**, **Envelope**, **Texture**, or **Dirt** to preserve those
+   characteristics while the remaining parameters mutate.
+6. Export up to 16 favorites as an MPC-oriented pad kit.
+
+Rejecting a candidate never deletes its source run. A close variation records
+its source filename, mutation distance, lock choices, complete parameters, and
+synthesis seed. Its `recipe.scd` therefore replays the exact custom job rather
+than generating an approximation.
 
 ## Command workflow
 
@@ -179,8 +196,8 @@ The manifest records the profile, seed, project and SuperCollider versions, Git
 revision and dirty state, export settings, raw parameters, effective amplitude,
 audio metrics, failures, cancellation state, and final totals.
 
-Regenerate a saved pack from its exact profile, family counts, seed, and level
-settings:
+Regenerate a saved pack or close variation from its exact profile, family
+counts, parameter locks, seed, and level settings:
 
 ```supercollider
 ~replayRecipe.("/full/path/to/recipe.scd");
