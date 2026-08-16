@@ -8,10 +8,12 @@
     pitchAmount = 1.9, pitchDecay = 0.035,
     harmonicAmount = 0.18, skinAmount = 0.12,
     drive = 1.6, lowBoost = 2.0,
-    bits = 16, sampleRateReduction = 44100|
+    bits = 16, sampleRateReduction = 44100, seed = 1|
 
     var pitchEnv, bodyEnv, skinEnv;
     var body, harmonic, skin, dry, warm, signal;
+
+    RandSeed.ir(1, seed);
 
     pitchEnv = EnvGen.kr(Env(
         [frequency * pitchAmount, frequency * 1.05, frequency],
@@ -52,9 +54,11 @@
 ~drumDefs[\woodRim] = SynthDef(\woodRim, {
     |out = 0, amp = 0.66, frequency = 720, decay = 0.10,
     tone = 0.45, noiseAmount = 0.16,
-    drive = 1.5, bits = 16, sampleRateReduction = 44100|
+    drive = 1.5, bits = 16, sampleRateReduction = 44100, seed = 1|
 
     var lifeEnv, noiseEnv, exciter, resonators, knock, signal;
+
+    RandSeed.ir(1, seed);
 
     lifeEnv = EnvGen.kr(
         Env.perc(0.0001, decay * 1.35, 1, -8),
@@ -93,9 +97,11 @@
     |out = 0, amp = 0.58, decay = 0.075,
     metallicTone = 6100, noiseAmount = 0.62,
     metalAmount = 0.38, brightness = 0.55,
-    drive = 1.35, bits = 16, sampleRateReduction = 44100|
+    drive = 1.35, bits = 16, sampleRateReduction = 44100, seed = 1|
 
     var ampEnv, clickEnv, noise, metal, signal;
+
+    RandSeed.ir(1, seed);
 
     ampEnv = EnvGen.kr(
         Env.perc(0.0001, decay, 1, -11),
@@ -135,10 +141,12 @@
     |out = 0, amp = 0.62, decay = 0.24,
     grainRate = 34, tone = 6900, spread = 0.45,
     bodyAmount = 0.16, drive = 1.25,
-    bits = 16, sampleRateReduction = 44100|
+    bits = 16, sampleRateReduction = 44100, seed = 1|
 
     var ampEnv, transientEnv, grainEnvelope;
     var grains, body, signal;
+
+    RandSeed.ir(1, seed);
 
     ampEnv = EnvGen.kr(
         Env.perc(0.001, decay, 1, -5),

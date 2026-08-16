@@ -46,10 +46,21 @@
 };
 
 ~prepareRun = { |jobs|
-    var file, git;
+    var counts, families, file, git, recipe, recipeFile;
     ~currentRunDirectory = ~createRunDirectory.();
     ~manifestPath = ~currentRunDirectory +/+ "sample_manifest.txt";
+    ~recipePath = ~currentRunDirectory +/+ "recipe.scd";
     git = ~gitMetadata.();
+    families = List.new;
+    jobs.do { |job|
+        if(families.includes(job[\family]).not) {
+            families.add(job[\family]);
+        };
+    };
+    counts = IdentityDictionary.new;
+    families.do { |family|
+        counts[family] = jobs.count { |job| job[\family] == family };
+    };
 
     file = File(~manifestPath, "w");
     if(file.isOpen.not) {
@@ -57,7 +68,7 @@
     };
 
     protect {
-        file.write("SC MPC DRUM LAB MANIFEST v2\n");
+        file.write("SC MPC DRUM LAB MANIFEST v3\n");
         file.write("Generated: " ++ Date.getDate.asString ++ "\n");
         file.write("Project version: "
             ++ ~runtimeConfig[\projectVersion] ++ "\n");
@@ -71,8 +82,48 @@
         file.write("Header format: " ++ ~runtimeConfig[\headerFormat] ++ "\n");
         file.write("Sample format: " ++ ~runtimeConfig[\sampleFormat] ++ "\n");
         file.write("Master amp: " ++ ~runtimeConfig[\masterAmp] ++ "\n\n");
+        file.write("Musical macros: "
+            ++ ~runtimeConfig[\macros].asCompileString ++ "\n");
+        file.write("Enabled families: "
+            ++ families.asArray.asCompileString ++ "\n");
+        file.write("Family counts: "
+            ++ counts.asCompileString ++ "\n\n");
     } {
         file.close;
+    };
+
+    recipe = if(families.includes(\preset)) {
+        (
+            kind: \sound,
+            sound: jobs.first.copy,
+            options: (
+                activeProfile: ~activeProfile,
+                masterAmp: ~runtimeConfig[\masterAmp]
+            )
+        )
+    } {
+        (
+            kind: \pack,
+            options: (
+                activeProfile: ~activeProfile,
+                randomSeed: ~runtimeConfig[\randomSeed],
+                samplesPerEngine: ~runtimeConfig[\samplesPerEngine],
+                engineCounts: counts,
+                enabledEngines: families.asArray,
+                macros: ~runtimeConfig[\macros],
+                masterAmp: ~runtimeConfig[\masterAmp],
+                maxConcurrentRenders: ~runtimeConfig[\maxConcurrentRenders]
+            )
+        )
+    };
+    recipeFile = File(~recipePath, "w");
+    if(recipeFile.isOpen.not) {
+        Error("Cannot write recipe: " ++ ~recipePath).throw;
+    };
+    protect {
+        recipeFile.write(recipe.asCompileString ++ "\n");
+    } {
+        recipeFile.close;
     };
     ~currentRunDirectory;
 };

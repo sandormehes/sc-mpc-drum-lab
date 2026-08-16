@@ -3,10 +3,12 @@
     |out = 0, amp = 0.65, frequency = 130, decay = 0.8,
     brightness = 0.6, resonance = 0.6, spread = 0.2,
     noiseAmount = 0.35, foldAmount = 0.04, drive = 1.2,
-    bits = 14, sampleRateReduction = 32000, combAmount = 0.08|
+    bits = 14, sampleRateReduction = 32000, combAmount = 0.08, seed = 1|
 
     var ampEnv, exciterEnv, exciter, resonators;
     var highLayer, comb, signal;
+
+    RandSeed.ir(1, seed);
 
     ampEnv = EnvGen.kr(
         Env.perc(0.0005, decay, 1, -4),

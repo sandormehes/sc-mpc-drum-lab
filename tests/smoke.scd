@@ -1,7 +1,8 @@
 // Language-only smoke tests. No audio files are rendered.
 
 (
-var assert, filenames, originalJobs, projectRoot, thickJobs;
+var assert, customJobs, filenames, macroJobs, originalJobs, projectRoot;
+var repeatJobs, selectedJobs, session, sessionJobs, thickJobs;
 
 try {
     projectRoot = File.realpath(
@@ -34,6 +35,62 @@ try {
         thickJobs[0][\engine] == \thickClubKick,
         "thickClub should use its own kick SynthDef"
     );
+    assert.(
+        ~generatorSpecs[\dancehallKick][\label] == "Dancehall Kick",
+        "engine metadata should expose a human-facing label"
+    );
+    assert.(
+        thickJobs[0][\parameters][\seed].isInteger,
+        "every generated sound should receive a synthesis seed"
+    );
+    repeatJobs = ~planJobs.();
+    assert.(
+        repeatJobs[0][\parameters][\seed]
+            == thickJobs[0][\parameters][\seed],
+        "sound seeds should be reproducible"
+    );
+    selectedJobs = ~planJobs.([\grimeSnare], (
+        activeProfile: \thickClub,
+        samplesPerEngine: 6,
+        enabledEngines: [\grimeSnare]
+    ));
+    assert.(
+        selectedJobs[0][\parameters]
+            == thickJobs.detect { |job| job[\family] == \grimeSnare }[\parameters],
+        "a sound should not change when other families are omitted"
+    );
+
+    customJobs = ~planJobs.(nil, (
+        activeProfile: \thickClub,
+        samplesPerEngine: 1,
+        enabledEngines: [\dancehallKick, \grimeSnare],
+        engineCounts: (dancehallKick: 2, grimeSnare: 3)
+    ));
+    assert.(customJobs.size == 5, "per-family counts should shape the pack");
+    assert.(
+        customJobs.count { |job| job[\family] == \dancehallKick } == 2,
+        "dancehallKick should use its family count"
+    );
+    macroJobs = ~planJobs.([\dancehallKick], (
+        activeProfile: \thickClub,
+        samplesPerEngine: 1,
+        enabledEngines: [\dancehallKick],
+        macros: (weight: 1, punch: 0.5, brightness: 0.5, tail: 0.5, dirt: 0.5)
+    ));
+    assert.(
+        macroJobs[0][\parameters][\amp]
+            > customJobs[0][\parameters][\amp],
+        "weight macro should increase effective source weight"
+    );
+
+    session = ~newDrumSession.((
+        activeProfile: \original,
+        samplesPerEngine: 2,
+        enabledEngines: [\kick],
+        engineCounts: nil
+    ));
+    sessionJobs = session[\plan].value(nil);
+    assert.(sessionJobs.size == 2, "session options should be independently plannable");
 
     filenames = thickJobs.collect { |job| job[\filename] };
     assert.(

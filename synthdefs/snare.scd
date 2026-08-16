@@ -5,10 +5,12 @@
     noiseWidth = 0.7, fmAmount = 0.2, fmRatio = 1.73,
     ringAmount = 0.15, ringRatio = 2.37, foldAmount = 0.05,
     drive = 1.3, bits = 14, sampleRateReduction = 30000,
-    combAmount = 0.08, combTime = 0.0065, combDecay = 0.1|
+    combAmount = 0.08, combTime = 0.0065, combDecay = 0.1, seed = 1|
 
     var bodyEnv, noiseEnv, transientEnv, pitchEnv, fm;
     var body, noise, transient, ring, comb, signal;
+
+    RandSeed.ir(1, seed);
 
     bodyEnv = EnvGen.kr(Env.perc(0.0005, decay * 0.65, 1, -5));
     noiseEnv = EnvGen.kr(

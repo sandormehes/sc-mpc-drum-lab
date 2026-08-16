@@ -2,7 +2,7 @@
 
 (
 ~config = (
-    projectVersion: "0.2.0",
+    projectVersion: "0.3.0",
 
     // Output is kept inside the repository by default.
     outputDirectory: ~projectRoot +/+ "output",
@@ -17,6 +17,12 @@
     // override the selected profile without editing the profile itself.
     activeProfile: \thickClub,
     samplesPerEngine: nil,
+    // Optional Event of per-family counts, for example:
+    // (dancehallKick: 8, grimeSnare: 4, dancehallRim: 2)
+    engineCounts: nil,
+    // Optional musical macro Event. Values range from 0 (less) to 1 (more),
+    // with 0.5 leaving the generated engine parameters unchanged.
+    macros: nil,
     masterAmp: nil,
     enabledEngines: nil,
 
@@ -37,7 +43,10 @@
     durationTolerance: 0.02,
 
     // Set true to start rendering immediately after evaluating main.scd.
-    autoStart: false
+    autoStart: false,
+
+    // gui.scd opens the control panel explicitly. Keep main.scd headless-safe.
+    openGuiOnLoad: false
 );
 
 File.mkdir(~config[\outputDirectory]);

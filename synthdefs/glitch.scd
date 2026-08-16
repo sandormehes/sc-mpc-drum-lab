@@ -4,10 +4,12 @@
     pulseWidth = 0.35, chaosAmount = 0.4, noiseAmount = 0.25,
     ringRatio = 2.51, foldAmount = 0.25, drive = 1.8, bits = 7,
     sampleRateReduction = 7000, combAmount = 0.12,
-    combTime = 0.0047, combDecay = 0.12|
+    combTime = 0.0047, combDecay = 0.12, seed = 1|
 
     var ampEnv, transientEnv, pitchEnv;
     var pulse, sine, noise, chaos, ring, comb, signal;
+
+    RandSeed.ir(1, seed);
 
     ampEnv = EnvGen.kr(
         Env.perc(0.0001, decay, 1, -7),

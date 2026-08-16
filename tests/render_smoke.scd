@@ -16,8 +16,22 @@ try {
     ~start.([\gqomTom, \dancehallRim, \grimeHat, \dancehallShaker]);
 
     Routine({
-        var passed;
+        var exportDirectory, favorites, passed, recipe, replayJobs;
         while({ ~generationRunning == true }, { 0.1.wait });
+
+        recipe = ~recipePath.load;
+        replayJobs = ~planJobs.(nil, recipe[\options]);
+        favorites = [
+            (
+                job: ~generationState[\jobs][0],
+                outputPath: ~currentRunDirectory +/+ "GQTOM_001.wav"
+            ),
+            (
+                job: ~generationState[\jobs][1],
+                outputPath: ~currentRunDirectory +/+ "DHRIM_001.wav"
+            )
+        ];
+        exportDirectory = ~exportDrumLabFavorites.(favorites);
 
         passed = ~generationState.notNil
             and: { ~generationState[\failures].isEmpty }
@@ -33,6 +47,17 @@ try {
             }
             and: {
                 File.exists(~currentRunDirectory +/+ "DHSHAKE_001.wav")
+            }
+            and: { recipe[\kind] == \pack }
+            and: { replayJobs.size == 4 }
+            and: {
+                File.exists(exportDirectory +/+ "A01_GQTOM.WAV")
+            }
+            and: {
+                File.exists(exportDirectory +/+ "A02_DHRIM.WAV")
+            }
+            and: {
+                File.exists(exportDirectory +/+ "favorites_manifest.txt")
             };
 
         if(passed) {

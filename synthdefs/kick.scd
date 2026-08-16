@@ -5,10 +5,12 @@
     clickTone = 6500, fmAmount = 0.15, fmRatio = 1.618,
     foldAmount = 0.05, drive = 1.4, bits = 16,
     sampleRateReduction = 44100, combAmount = 0,
-    combTime = 0.008, combDecay = 0.12|
+    combTime = 0.008, combDecay = 0.12, seed = 1|
 
     var pitchEnv, ampEnv, clickEnv, freq, fm;
     var body, sub, click, comb, signal;
+
+    RandSeed.ir(1, seed);
 
     pitchEnv = EnvGen.kr(Env(
         [frequency * pitchAmount, frequency * 0.82,

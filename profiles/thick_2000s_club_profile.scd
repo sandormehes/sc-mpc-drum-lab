@@ -17,10 +17,12 @@
     punchAmount = 0.32, punchRatio = 2.15, punchDecay = 0.085,
     harmonicAmount = 0.12, clickAmount = 0.08, clickTone = 3200,
     drive = 1.8, lowBoost = 3.0, punchBoost = 2.0,
-    bits = 16, sampleRateReduction = 44100|
+    bits = 16, sampleRateReduction = 44100, seed = 1|
 
     var pitchEnv, bodyEnv, punchEnv, clickEnv;
     var core, punch, harmonic, click, dry, warm, signal;
+
+    RandSeed.ir(1, seed);
 
     pitchEnv = EnvGen.kr(Env(
         [frequency * pitchAmount, frequency * 1.08, frequency],
@@ -86,11 +88,13 @@
     noiseTone = 2800, noiseWidth = 0.65,
     clapAmount = 0.18, ringAmount = 0.08, ringRatio = 1.83,
     drive = 1.7, bodyBoost = 2.5, crackBoost = 1.5,
-    bits = 16, sampleRateReduction = 44100|
+    bits = 16, sampleRateReduction = 44100, seed = 1|
 
     var bodyEnv, noiseEnv, transientEnv, clapEnv;
     var body, shell, noise, transient, clap, ring;
     var dry, warm, signal;
+
+    RandSeed.ir(1, seed);
 
     bodyEnv = EnvGen.kr(Env.perc(0.0005, decay * 0.7, 1, -6));
     noiseEnv = EnvGen.kr(
@@ -377,10 +381,52 @@
     }
 );
 
+~generatorSpecs[\dancehallKick].putAll((
+    label: "Dancehall Kick", category: \kick,
+    description: "Round low end with a short, warm upper-bass knock."
+));
+~generatorSpecs[\grimeKick].putAll((
+    label: "Grime Kick", category: \kick,
+    description: "Harder attack, stronger harmonics, and controlled grit."
+));
+~generatorSpecs[\gqomKick].putAll((
+    label: "Gqom Kick", category: \kick,
+    description: "Dark, low, and longer-bodied for sparse rolling patterns."
+));
+~generatorSpecs[\dancehallSnare].putAll((
+    label: "Dancehall Snare", category: \snare,
+    description: "Warm body with a compact clap and restrained crack."
+));
+~generatorSpecs[\grimeSnare].putAll((
+    label: "Grime Snare", category: \snare,
+    description: "Dense body, brighter crack, and a more driven finish."
+));
+~generatorSpecs[\gqomPerc].putAll((
+    label: "Gqom Percussion", category: \percussion,
+    description: "Dark, short metallic accents kept clear of the sub range."
+));
+~generatorSpecs[\gqomTom].putAll((
+    label: "Gqom Low Tom", category: \tom,
+    description: "Low tuned drum for rolling kick-and-tom conversations."
+));
+~generatorSpecs[\dancehallRim].putAll((
+    label: "Dancehall Rim", category: \rim,
+    description: "Dry wooden rim and side-stick tones."
+));
+~generatorSpecs[\grimeHat].putAll((
+    label: "Grime Closed Hat", category: \hat,
+    description: "Tight metallic ticks from clean to lightly degraded."
+));
+~generatorSpecs[\dancehallShaker].putAll((
+    label: "Dancehall Shaker", category: \shaker,
+    description: "Loose, grainy top-end movement for off-beat accents."
+));
+
 // Profile data is registered without mutating configuration or replacing the
 // shared job planner. Explicit values in config.scd override these defaults.
 ~profiles[\thickClub] = (
     displayName: "Thick 2000s Club",
+    description: "Focused dancehall, grime, and gqom drums for MPC kits.",
     defaults: (
         samplesPerEngine: 6,
         masterAmp: 0.92,

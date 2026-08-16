@@ -61,7 +61,7 @@
 );
 
 ~renderSound = {
-    |sound, filename|
+    |sound, filename, options|
     var job, outputName;
     if(~generationRunning == true) {
         "A generation job is already running.".warn;
@@ -73,7 +73,14 @@
                 Error("Preset filename must not contain a directory path.").throw;
             };
 
-            ~activateProfile.(~config[\activeProfile]);
+            ~activateProfile.(
+                if(options.notNil) {
+                    options[\activeProfile] ? ~config[\activeProfile]
+                } {
+                    ~config[\activeProfile]
+                },
+                options
+            );
             job = (
                 family: \preset,
                 engine: sound[\engine],

@@ -42,6 +42,7 @@ loadProject = { |projectDirectory|
     profilePaths.do { |profilePath| profilePath.load };
 
     ~activateProfile.(~config[\activeProfile]);
+    (projectDirectory +/+ "lib/gui.scd").load;
 
     "".postln;
     "SC MPC Drum Lab loaded.".postln;
@@ -53,8 +54,13 @@ loadProject = { |projectDirectory|
         "Starting sample generation...".postln;
         ~start.();
     } {
+        "Run ~openDrumLab.() for the control panel.".postln;
         "Run ~dryRun.() to inspect the plan.".postln;
         "Run ~start.() to generate the sample pack.".postln;
+    };
+
+    if(~runtimeConfig[\openGuiOnLoad]) {
+        { ~openDrumLab.() }.defer;
     };
 };
 

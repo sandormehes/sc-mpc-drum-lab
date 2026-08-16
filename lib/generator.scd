@@ -124,8 +124,32 @@
     }
 );
 
+// Human-facing metadata is deliberately kept beside the sound generators so
+// the command API, GUI, and documentation all describe the same engines.
+~generatorSpecs[\kick].putAll((
+    label: "Experimental Kick", category: \kick,
+    description: "Wide-ranging synthesized kick with FM, fold, and comb color."
+));
+~generatorSpecs[\snare].putAll((
+    label: "Experimental Snare", category: \snare,
+    description: "Tonal and noisy snare spanning clean hits to digital grit."
+));
+~generatorSpecs[\metal].putAll((
+    label: "Metal Percussion", category: \percussion,
+    description: "Inharmonic struck-metal and industrial percussion."
+));
+~generatorSpecs[\glitch].putAll((
+    label: "Glitch Percussion", category: \percussion,
+    description: "Short chaotic, folded, deliberately low-resolution hits."
+));
+~generatorSpecs[\resonator].putAll((
+    label: "Resonator", category: \percussion,
+    description: "Pitched resonant impacts with bright, ringing tails."
+));
+
 ~profiles[\original] = (
     displayName: "Original Experimental",
+    description: "Broad synthetic drums, metals, glitches, and resonators.",
     defaults: (
         samplesPerEngine: 12,
         masterAmp: 0.8,
@@ -133,7 +157,30 @@
     )
 );
 
-~activateProfile = { |profileName|
+~generationListeners = List.new;
+
+~addGenerationListener = { |listener|
+    ~generationListeners.add(listener);
+    listener;
+};
+
+~removeGenerationListener = { |listener|
+    ~generationListeners.remove(listener);
+    listener;
+};
+
+~notifyGeneration = { |event, data|
+    data = data ? ();
+    ~generationListeners.copy.do { |listener|
+        try {
+            listener.value(event, data);
+        } { |error|
+            ("Generation listener failed: " ++ error.errorString).warn;
+        };
+    };
+};
+
+~activateProfile = { |profileName, overrides|
     var profile, defaults;
 
     profile = ~profiles[profileName];
@@ -146,6 +193,14 @@
     defaults.keysValuesDo { |key, value|
         if(~runtimeConfig[key].isNil) {
             ~runtimeConfig[key] = value.deepCopy;
+        };
+    };
+
+    if(overrides.notNil) {
+        overrides.keysValuesDo { |key, value|
+            if(key != \activeProfile) {
+                ~runtimeConfig[key] = value.deepCopy;
+            };
         };
     };
 
@@ -166,8 +221,19 @@
         Error("maxConcurrentRenders must be a positive integer.").throw;
     };
 
+    if(~runtimeConfig[\engineCounts].notNil
+        and: {
+            ~runtimeConfig[\engineCounts].isKindOf(Dictionary).not
+        }) {
+        Error("engineCounts must be an Event or Dictionary.").throw;
+    };
+    if(~runtimeConfig[\macros].notNil
+        and: { ~runtimeConfig[\macros].isKindOf(Dictionary).not }) {
+        Error("macros must be an Event or Dictionary.").throw;
+    };
+
     ~runtimeConfig[\enabledEngines].do { |engineName|
-        var spec;
+        var count, spec;
         spec = ~generatorSpecs[engineName];
         if(spec.isNil) {
             Error("Missing generator specification: " ++ engineName).throw;
@@ -175,11 +241,103 @@
         if(~drumDefs[spec[\synth]].isNil) {
             Error("Missing SynthDef: " ++ spec[\synth]).throw;
         };
+        count = if(~runtimeConfig[\engineCounts].notNil) {
+            ~runtimeConfig[\engineCounts][engineName]
+        };
+        if(count.notNil and: {
+            count.isInteger.not or: { count <= 0 }
+        }) {
+            Error(
+                "engineCounts[" ++ engineName ++ "] must be a positive integer."
+            ).throw;
+        };
     };
 
     ~activeProfile = profileName;
     ~activeProfileDefinition = profile;
     profile;
+};
+
+~engineSampleCount = { |engineName|
+    var count, counts;
+    counts = ~runtimeConfig[\engineCounts];
+    count = if(counts.notNil) { counts[engineName] };
+    count ? ~runtimeConfig[\samplesPerEngine];
+};
+
+~jobSeed = { |engineName, index|
+    var nameValue;
+    nameValue = 0;
+    engineName.asString.do { |character, characterIndex|
+        nameValue = nameValue + (character.ascii * (characterIndex + 1));
+    };
+    (((~runtimeConfig[\randomSeed].asInteger
+        + (nameValue * 1009)
+        + ((index + 1) * 7919)).abs % 2147483646) + 1).asInteger;
+};
+
+~macroValue = { |macros, key|
+    var value;
+    value = if(macros.notNil) { macros[key] };
+    (value ? 0.5).asFloat.clip(0, 1);
+};
+
+~applyMusicalMacros = { |parameters, macros|
+    var brightness, dirt, punch, result, tail, weight;
+    var add, scale;
+    result = parameters.copy;
+    if(macros.notNil) {
+        weight = (~macroValue.(macros, \weight) - 0.5) * 2;
+        punch = (~macroValue.(macros, \punch) - 0.5) * 2;
+        brightness = (~macroValue.(macros, \brightness) - 0.5) * 2;
+        tail = (~macroValue.(macros, \tail) - 0.5) * 2;
+        dirt = (~macroValue.(macros, \dirt) - 0.5) * 2;
+
+        scale = { |key, factor, low = 0, high = 20000|
+            if(result[key].notNil) {
+                result[key] = (result[key] * factor).clip(low, high);
+            };
+        };
+        add = { |key, amount, low = 0, high = 20000|
+            if(result[key].notNil) {
+                result[key] = (result[key] + amount).clip(low, high);
+            };
+        };
+
+        scale.(\amp, 1 + (weight * 0.16), 0.05, 1.2);
+        scale.(\bodyAmount, 1 + (weight * 0.28), 0, 1.2);
+        scale.(\harmonicAmount, 1 + (weight * 0.18), 0, 1);
+        add.(\lowBoost, weight * 1.4, 0, 6);
+        add.(\bodyBoost, weight * 1.0, 0, 6);
+
+        scale.(\punchAmount, 1 + (punch * 0.35), 0, 1.2);
+        scale.(\pitchAmount, 1 + (punch * 0.18), 0.2, 12);
+        scale.(\clickAmount, 1 + (punch * 0.3), 0, 1);
+        add.(\punchBoost, punch * 1.0, 0, 6);
+        add.(\crackBoost, punch * 0.8, 0, 6);
+
+        scale.(\clickTone, 1 + (brightness * 0.3), 500, 14000);
+        scale.(\noiseTone, 1 + (brightness * 0.3), 500, 14000);
+        scale.(\metallicTone, 1 + (brightness * 0.25), 2500, 12000);
+        scale.(\tone, 1 + (brightness * 0.22), 0.01, 12000);
+        add.(\brightness, brightness * 0.22, 0, 1);
+
+        scale.(\decay, 1 + (tail * 0.45), 0.015, 4);
+        scale.(\resonance, 1 + (tail * 0.3), 0.01, 2);
+        scale.(\combDecay, 1 + (tail * 0.35), 0.005, 2);
+
+        scale.(\drive, 1 + (dirt * 0.4), 0.5, 8);
+        scale.(\foldAmount, 1 + (dirt * 0.7), 0, 1);
+        if(result[\bits].notNil) {
+            result[\bits] = (result[\bits] - (dirt * 3)).round.clip(3, 16);
+        };
+        if(result[\sampleRateReduction].notNil) {
+            result[\sampleRateReduction] = (
+                result[\sampleRateReduction] * (1 - (dirt * 0.32))
+            ).clip(700, 44100);
+        };
+    };
+    result;
 };
 
 ~zeroPadNumber = { |number, width = 3|
@@ -216,9 +374,15 @@
         var spec;
         spec = ~generatorSpecs[engineName];
 
-        ~runtimeConfig[\samplesPerEngine].do { |index|
-            var parameters;
+        ~engineSampleCount.(engineName).do { |index|
+            var parameters, seed;
+            seed = ~jobSeed.(engineName, index);
+            thisThread.randSeed = seed;
             parameters = spec[\generator].value;
+            parameters = ~applyMusicalMacros.(
+                parameters, ~runtimeConfig[\macros]
+            );
+            parameters[\seed] = seed;
             jobs.add((
                 family: engineName,
                 engine: spec[\synth],
@@ -231,9 +395,11 @@
     jobs.asArray;
 };
 
-~planJobs = { |engineNames|
-    var jobs;
-    ~activateProfile.(~config[\activeProfile]);
+~planJobs = { |engineNames, options|
+    var jobs, profileName;
+    profileName = if(options.notNil) { options[\activeProfile] };
+    profileName = profileName ? ~config[\activeProfile];
+    ~activateProfile.(profileName, options);
     jobs = ~makeJobs.();
 
     if(engineNames.notNil) {
@@ -245,12 +411,86 @@
     jobs;
 };
 
-~dryRun = { |engineNames|
-    var jobs;
-    jobs = ~planJobs.(engineNames);
-    ("Planned " ++ jobs.size ++ " renders:").postln;
-    jobs.do { |job| ("  " ++ job[\filename]).postln };
+~dryRun = { |engineNames, options|
+    var approximateBytes, approximateSeconds, families, jobs;
+    jobs = ~planJobs.(engineNames, options);
+    families = jobs.collect { |job| job[\family] }.asSet.asArray;
+    approximateSeconds = jobs.sum { |job| job[\duration] };
+    approximateBytes = approximateSeconds
+        * ~runtimeConfig[\sampleRate] * 2;
+
+    ("Planned " ++ jobs.size ++ " renders across "
+        ++ families.size ++ " families:").postln;
+    families.do { |family|
+        var count, spec;
+        spec = ~generatorSpecs[family];
+        count = jobs.count { |job| job[\family] == family };
+        ("  " ++ (spec[\label] ? family.asString)
+            ++ ": " ++ count).postln;
+    };
+    ("Combined audio duration: "
+        ++ approximateSeconds.round(0.1) ++ " seconds").postln;
+    ("Approximate WAV data: "
+        ++ (approximateBytes / (1024 * 1024)).round(0.1) ++ " MB").postln;
     jobs;
+};
+
+~listProfiles = {
+    ~profiles.keys.asArray.sort.do { |name|
+        var profile;
+        profile = ~profiles[name];
+        (name.asCompileString ++ " - " ++ profile[\displayName]
+            ++ ": " ++ (profile[\description] ? "")).postln;
+    };
+};
+
+~listFamilies = { |profileName|
+    var profile;
+    profile = ~profiles[profileName ? ~config[\activeProfile]];
+    if(profile.isNil) { Error("Unknown profile.").throw };
+    profile[\defaults][\enabledEngines].do { |name|
+        var spec;
+        spec = ~generatorSpecs[name];
+        (name.asCompileString ++ " - " ++ (spec[\label] ? name.asString)
+            ++ ": " ++ (spec[\description] ? "")).postln;
+    };
+};
+
+~status = {
+    var result, state;
+    state = ~generationState;
+    result = if(~generationRunning == true and: { state.notNil }) {
+        (
+            running: true,
+            completed: state[\completed],
+            total: state[\jobs].size,
+            active: state[\active],
+            failed: state[\failures].size,
+            cancelled: state[\cancelled],
+            outputDirectory: ~currentRunDirectory
+        )
+    } {
+        (
+            running: false,
+            outputDirectory: ~currentRunDirectory
+                ? ~runtimeConfig[\outputDirectory]
+        )
+    };
+    result.postln;
+    result;
+};
+
+~help = {
+    "SC MPC Drum Lab commands".postln;
+    "  ~openDrumLab.()                 Open the control panel".postln;
+    "  ~listProfiles.()                List available profiles".postln;
+    "  ~listFamilies.()                List families in the active profile".postln;
+    "  ~dryRun.()                      Summarize the next pack".postln;
+    "  ~start.()                       Generate the configured pack".postln;
+    "  ~generateEngine.(\\family)      Generate one family".postln;
+    "  ~replayRecipe.(path)            Regenerate a saved recipe".postln;
+    "  ~cancelGeneration.()            Stop scheduling new renders".postln;
+    "  ~status.()                      Show current progress and output".postln;
 };
 
 ~finishGenerationIfReady = {
@@ -277,6 +517,16 @@
         ("Failed:    " ++ state[\failures].size).postln;
         ("Samples:   " ++ ~currentRunDirectory).postln;
         ("Manifest:  " ++ ~manifestPath).postln;
+        ("Recipe:    " ++ ~recipePath).postln;
+        ~notifyGeneration.(\finished, (
+            completed: state[\completed],
+            failed: state[\failures].size,
+            cancelled: state[\cancelled],
+            total: state[\jobs].size,
+            outputDirectory: ~currentRunDirectory,
+            manifestPath: ~manifestPath,
+            recipePath: ~recipePath
+        ));
     };
 };
 
@@ -295,6 +545,12 @@
         state[\nextIndex] = state[\nextIndex] + 1;
         state[\active] = state[\active] + 1;
 
+        ~notifyGeneration.(\rendering, (
+            job: job,
+            completed: state[\completed],
+            total: state[\jobs].size
+        ));
+
         ~renderSample.(
             job[\engine],
             job[\parameters],
@@ -306,6 +562,13 @@
                 ~writeManifestEntry.(
                     job, outputPath, validation, finalParameters
                 );
+                ~notifyGeneration.(\rendered, (
+                    job: job,
+                    outputPath: outputPath,
+                    validation: validation,
+                    completed: state[\completed],
+                    total: state[\jobs].size
+                ));
                 (
                     "Progress: " ++ state[\completed]
                     ++ "/" ++ state[\jobs].size
@@ -316,6 +579,12 @@
                 state[\active] = state[\active] - 1;
                 state[\failures].add((job: job, error: message));
                 ~writeManifestFailure.(job, message);
+                ~notifyGeneration.(\failed, (
+                    job: job,
+                    message: message,
+                    completed: state[\completed],
+                    total: state[\jobs].size
+                ));
                 ("Render failed: " ++ job[\filename] ++ " - " ++ message).warn;
                 ~pumpJobQueue.();
             }
@@ -325,13 +594,13 @@
     ~finishGenerationIfReady.();
 };
 
-~start = { |engineNames|
+~start = { |engineNames, options|
     var jobs;
     if(~generationRunning == true) {
         "A generation job is already running.".warn;
     } {
         try {
-            jobs = ~planJobs.(engineNames);
+            jobs = ~planJobs.(engineNames, options);
             ~prepareRun.(jobs);
             ~generationState = (
                 jobs: jobs,
@@ -342,6 +611,11 @@
                 cancelled: false
             );
             ~generationRunning = true;
+            ~notifyGeneration.(\started, (
+                total: jobs.size,
+                outputDirectory: ~currentRunDirectory,
+                profile: ~activeProfile
+            ));
             ("Starting " ++ jobs.size ++ " renders with up to "
                 ++ ~runtimeConfig[\maxConcurrentRenders]
                 ++ " workers...").postln;
@@ -353,7 +627,43 @@
     };
 };
 
-~generateEngine = { |engineName| ~start.([engineName]) };
+~generateEngine = { |engineName, options| ~start.([engineName], options) };
+
+~newDrumSession = { |options|
+    var session;
+    options = options ? ();
+    session = (options: options.deepCopy);
+    session[\plan] = { |engineNames|
+        ~planJobs.(engineNames, session[\options])
+    };
+    session[\dryRun] = { |engineNames|
+        ~dryRun.(engineNames, session[\options])
+    };
+    session[\generate] = { |engineNames|
+        ~start.(engineNames, session[\options])
+    };
+    session;
+};
+
+~replayRecipe = { |path|
+    var recipe;
+    if(path.isNil or: { File.exists(path).not }) {
+        Error("Recipe file was not found: " ++ path).throw;
+    };
+    recipe = path.load;
+    if(recipe.isKindOf(Dictionary).not) {
+        Error("Recipe did not contain a configuration Event.").throw;
+    };
+    switch(recipe[\kind],
+        \pack, { ~start.(nil, recipe[\options]) },
+        \sound, {
+            ~renderSound.(
+                recipe[\sound], recipe[\sound][\filename], recipe[\options]
+            )
+        },
+        { ~start.(nil, recipe) }
+    );
+};
 
 ~cancelGeneration = {
     if(~generationRunning == true) {

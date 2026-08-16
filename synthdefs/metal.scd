@@ -4,10 +4,12 @@
     exciterAmount = 0.4, resonance = 0.35, inharmonicity = 1,
     fmAmount = 0.4, foldAmount = 0.08, drive = 1.4, bits = 12,
     sampleRateReduction = 18000, combAmount = 0.15,
-    combDecay = 0.2|
+    combDecay = 0.2, seed = 1|
 
     var ampEnv, exciterEnv, exciter, resonators;
     var fmLayer, comb, signal;
+
+    RandSeed.ir(1, seed);
 
     ampEnv = EnvGen.kr(
         Env.perc(0.0005, decay, 1, -5),
