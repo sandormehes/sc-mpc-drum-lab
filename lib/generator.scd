@@ -575,12 +575,15 @@
 ~help = {
     "SC MPC Drum Lab commands".postln;
     "  ~openDrumLab.()                 Open the control panel".postln;
+    "  ~openFavoriteKitBuilder.(~drumLabFavorites)  Arrange the 16-pad kit".postln;
     "  ~listProfiles.()                List available profiles".postln;
     "  ~listFamilies.()                List families in the active profile".postln;
     "  ~dryRun.()                      Summarize the next pack".postln;
     "  ~start.()                       Generate the configured pack".postln;
     "  ~generateEngine.(\\family)      Generate one family".postln;
     "  ~replayRecipe.(path)            Regenerate a saved recipe".postln;
+    "  ~loadDrumLabSession.(path)      Load saved GUI/session data".postln;
+    "  ~renderSessionFavorites.(data)  Rebuild a session's favorite kit".postln;
     "  ~cancelGeneration.()            Stop scheduling new renders".postln;
     "  ~status.()                      Show current progress and output".postln;
 };
@@ -658,6 +661,7 @@
                     job: job,
                     outputPath: outputPath,
                     validation: validation,
+                    effectiveParameters: finalParameters,
                     completed: state[\completed],
                     total: state[\jobs].size
                 ));

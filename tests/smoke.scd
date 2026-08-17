@@ -1,9 +1,11 @@
 // Language-only smoke tests. No audio files are rendered.
 
 (
-var assert, customJobs, filenames, macroJobs, originalJobs, projectRoot;
-var repeatJobs, repeatVariation, selectedJobs, session, sessionJobs, thickJobs;
-var variationJob;
+var assert, customJobs, favorite, favoriteList, favoriteRecipe, filenames;
+var labSession;
+var loadedSession, macroJobs, originalJobs, projectRoot, repeatJobs;
+var repeatVariation, selectedJobs, session, sessionJobs, sessionPath;
+var sessionOptions, thickJobs, variationJob;
 
 try {
     projectRoot = File.realpath(
@@ -127,6 +129,83 @@ try {
     ));
     sessionJobs = session[\plan].value(nil);
     assert.(sessionJobs.size == 2, "session options should be independently plannable");
+
+    sessionOptions = (
+        activeProfile: \thickClub,
+        randomSeed: 26071986,
+        samplesPerEngine: 2,
+        enabledEngines: [\dancehallKick, \grimeSnare],
+        engineCounts: (dancehallKick: 3, grimeSnare: 2),
+        macros: (
+            weight: 0.7, punch: 0.6, brightness: 0.4,
+            tail: 0.5, dirt: 0.3
+        ),
+        masterAmp: 0.92,
+        maxConcurrentRenders: 2
+    );
+    favorite = (
+        job: thickJobs[0].deepCopy,
+        outputPath: projectRoot +/+ "output/MISSING_TEST_FAVORITE.wav",
+        effectiveParameters: thickJobs[0][\parameters].deepCopy
+    );
+    favorite[\effectiveParameters][\amp] = 0.61;
+    sessionPath = projectRoot +/+ "output/.smoke_session.scd";
+    ~removeFileIfExists.(sessionPath);
+    labSession = ~saveDrumLabSession.(
+        sessionPath, sessionOptions, [favorite], "Smoke Session"
+    );
+    loadedSession = ~loadDrumLabSession.(sessionPath);
+    assert.(
+        loadedSession[\schemaVersion] == 1,
+        "saved sessions should use the supported schema"
+    );
+    assert.(
+        loadedSession[\options][\engineCounts][\dancehallKick] == 3,
+        "session loading should preserve per-family counts"
+    );
+    assert.(
+        loadedSession[\favorites].size == 1,
+        "session loading should preserve favorites"
+    );
+    favoriteRecipe = ~favoriteKitRecipe.(
+        loadedSession[\favorites], \thickClub
+    );
+    assert.(
+        favoriteRecipe[\jobs][0][\filename] == "A01_DHKICK.WAV",
+        "favorite recipes should use pad-oriented filenames"
+    );
+    assert.(
+        favoriteRecipe[\jobs][0][\parameters][\amp] == 0.61,
+        "favorite recipes should preserve effective amplitude"
+    );
+    assert.(
+        favoriteRecipe[\options][\masterAmp] == 1.0,
+        "effective favorite parameters should not be scaled twice"
+    );
+    favoriteList = List[
+        favorite.deepCopy,
+        favorite.deepCopy
+    ];
+    favoriteList[0][\outputPath] = "first.wav";
+    favoriteList[1][\outputPath] = "second.wav";
+    assert.(
+        ~moveDrumLabFavorite.(favoriteList, 0, 1) == 1,
+        "favorite pads should move to a valid adjacent slot"
+    );
+    assert.(
+        favoriteList[0][\outputPath] == "second.wav"
+            and: { favoriteList[1][\outputPath] == "first.wav" },
+        "moving a favorite should preserve and reorder both entries"
+    );
+    assert.(
+        ~moveDrumLabFavorite.(favoriteList, 0, -1).isNil,
+        "favorite pads should not move outside the 16-pad sequence"
+    );
+    assert.(
+        ~drumLabFavoritePadLabel.(nil, 0) == "A01\nEmpty",
+        "empty pads should have clear MPC-oriented labels"
+    );
+    ~removeFileIfExists.(sessionPath);
 
     filenames = thickJobs.collect { |job| job[\filename] };
     assert.(

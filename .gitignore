@@ -3,3 +3,7 @@
 # Rendered packs are build artifacts. Keep only the directory placeholder.
 output/*
 !output/.gitkeep
+
+# Saved GUI sessions are personal working data.
+sessions/*
+!sessions/.gitkeep

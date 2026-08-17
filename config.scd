@@ -2,10 +2,13 @@
 
 (
 ~config = (
-    projectVersion: "0.4.0",
+    projectVersion: "0.6.0",
 
     // Output is kept inside the repository by default.
     outputDirectory: ~projectRoot +/+ "output",
+
+    // User-created lab sessions are stored separately from rendered audio.
+    sessionDirectory: ~projectRoot +/+ "sessions",
 
     sampleRate: 44100,
     headerFormat: "WAV",
@@ -50,6 +53,7 @@
 );
 
 File.mkdir(~config[\outputDirectory]);
+File.mkdir(~config[\sessionDirectory]);
 ~drumDefs = IdentityDictionary.new;
 ~generatorSpecs = IdentityDictionary.new;
 ~presets = IdentityDictionary.new;

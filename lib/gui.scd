@@ -35,12 +35,20 @@
 };
 
 ~exportDrumLabFavorites = { |favorites|
-    var baseName, candidate, counter, file, outputRoot;
+    var baseName, candidate, counter, file, missing, outputRoot, recipe;
     if(favorites.isNil or: { favorites.isEmpty }) {
         Error("There are no favorite previews to export.").throw;
     };
     if(favorites.size > 16) {
         Error("A favorites kit can contain at most 16 samples.").throw;
+    };
+    missing = favorites.count { |favorite|
+        favorite[\outputPath].isNil
+            or: { File.exists(favorite[\outputPath]).not }
+    };
+    if(missing > 0) {
+        Error(missing ++ " favorite source file(s) are unavailable. "
+            ++ "Use Rebuild exact kit instead.").throw;
     };
     outputRoot = ~runtimeConfig[\outputDirectory] ? ~config[\outputDirectory];
     baseName = Date.getDate.asSortableString ++ "_favorites";
@@ -83,7 +91,309 @@
     } {
         file.close;
     };
+    recipe = ~favoriteKitRecipe.(favorites, ~activeProfile);
+    ~writeDrumLabDataFile.(candidate +/+ "favorites_recipe.scd", recipe);
     candidate;
+};
+
+~drumLabFavoriteSourceAvailable = { |favorite|
+    favorite.notNil
+        and: { favorite[\outputPath].notNil }
+        and: { File.exists(favorite[\outputPath]) };
+};
+
+~drumLabFavoritePadLabel = { |favorite, index, selected = false|
+    var padName, prefix, status;
+    padName = "A" ++ ~zeroPadNumber.(index + 1, 2);
+    if(favorite.isNil) {
+        padName ++ "\nEmpty"
+    } {
+        prefix = ~generatorSpecs[favorite[\job][\family]][\prefix]
+            ? favorite[\job][\family].asString.toUpper;
+        status = if(~drumLabFavoriteSourceAvailable.(favorite)) {
+            ""
+        } {
+            "  [REBUILD]"
+        };
+        (if(selected) { "> " } { "" }) ++ padName ++ "\n"
+            ++ prefix ++ status;
+    };
+};
+
+~moveDrumLabFavorite = { |favorites, index, offset|
+    var result, target, temporary;
+    result = nil;
+    if(favorites.notNil
+        and: { index.isInteger }
+        and: { offset.isInteger }
+        and: { index >= 0 }
+        and: { index < favorites.size }) {
+        target = index + offset;
+        if(target >= 0 and: { target < favorites.size }) {
+            temporary = favorites[index];
+            favorites[index] = favorites[target];
+            favorites[target] = temporary;
+            result = target;
+        };
+    };
+    result;
+};
+
+~openFavoriteKitBuilder = { |favorites, profileName, onFavoritesChanged|
+    var activeRebuild, builderListener, exportButton, leftButton;
+    var missingCount, moveSelection, padButtons, playButton, rebuildButton;
+    var rebuildJobs;
+    var refresh, removeButton, rightButton, selectedIndex, selectionText;
+    var setBusy, setStatus, statusText, window;
+
+    favorites = favorites ? ~drumLabFavorites ? List.new;
+    ~drumLabFavorites = favorites;
+    if(~favoriteKitBuilderWindow.notNil) {
+        try { ~favoriteKitBuilderWindow.close } { };
+    };
+    activeRebuild = false;
+    padButtons = Array.newClear(16);
+    selectedIndex = if(favorites.notEmpty) { 0 } { nil };
+
+    window = Window(
+        "Favorite Kit Builder",
+        Rect(130, 70, 860, 650),
+        resizable: false
+    );
+    ~favoriteKitBuilderWindow = window;
+
+    StaticText(window, Rect(20, 14, 500, 30))
+        .string_("Favorite Kit Builder")
+        .font_(Font.default.boldVariant.size_(20));
+    StaticText(window, Rect(20, 46, 810, 24))
+        .string_("Arrange favorites in MPC pad order. Click a pad to select and audition it.");
+
+    setStatus = { |message|
+        { statusText.string = message }.defer;
+    };
+    setBusy = { |busy|
+        {
+            padButtons.do { |button| button.enabled = busy.not };
+            playButton.enabled = busy.not and: { selectedIndex.notNil };
+            leftButton.enabled = busy.not and: { selectedIndex.notNil }
+                and: { selectedIndex > 0 };
+            rightButton.enabled = busy.not and: { selectedIndex.notNil }
+                and: { selectedIndex < (favorites.size - 1) };
+            removeButton.enabled = busy.not and: { selectedIndex.notNil };
+            exportButton.enabled = busy.not and: { favorites.notEmpty }
+                and: { missingCount == 0 };
+            rebuildButton.enabled = busy.not and: { favorites.notEmpty };
+        }.defer;
+    };
+
+    refresh = {
+        {
+            var favorite, sourceState;
+            if(selectedIndex.notNil and: { selectedIndex >= favorites.size }) {
+                selectedIndex = if(favorites.notEmpty) {
+                    favorites.size - 1
+                } { nil };
+            };
+            missingCount = favorites.count { |item|
+                ~drumLabFavoriteSourceAvailable.(item).not
+            };
+            padButtons.do { |button, index|
+                favorite = if(index < favorites.size) { favorites[index] };
+                button.states = [[~drumLabFavoritePadLabel.(
+                    favorite, index, selectedIndex == index
+                )]];
+                button.toolTip = if(favorite.isNil) {
+                    "Empty pad"
+                } {
+                    favorite[\job][\filename] ? "Favorite sound"
+                };
+            };
+            favorite = if(selectedIndex.notNil) { favorites[selectedIndex] };
+            sourceState = if(favorite.notNil) {
+                if(~drumLabFavoriteSourceAvailable.(favorite)) {
+                    "Source WAV ready"
+                } {
+                    "Source WAV missing — this pad can still be rebuilt exactly"
+                }
+            } {
+                "Select a filled pad."
+            };
+            selectionText.string = if(favorite.notNil) {
+                "A" ++ ~zeroPadNumber.(selectedIndex + 1, 2) ++ "  •  "
+                    ++ (~generatorSpecs[favorite[\job][\family]][\label]
+                        ? favorite[\job][\family].asString)
+                    ++ "  •  " ++ sourceState
+            } {
+                sourceState
+            };
+            playButton.enabled = favorite.notNil
+                and: { ~drumLabFavoriteSourceAvailable.(favorite) }
+                and: { ~generationRunning != true };
+            leftButton.enabled = selectedIndex.notNil
+                and: { selectedIndex > 0 }
+                and: { ~generationRunning != true };
+            rightButton.enabled = selectedIndex.notNil
+                and: { selectedIndex < (favorites.size - 1) }
+                and: { ~generationRunning != true };
+            removeButton.enabled = favorite.notNil
+                and: { ~generationRunning != true };
+            exportButton.enabled = favorites.notEmpty
+                and: { missingCount == 0 }
+                and: { ~generationRunning != true };
+            rebuildButton.enabled = favorites.notEmpty
+                and: { ~generationRunning != true };
+        }.defer;
+    };
+
+    16.do { |index|
+        var column, left, row, top;
+        column = index % 4;
+        row = (index / 4).floor;
+        left = 20 + (column * 205);
+        top = 82 + (row * 78);
+        padButtons[index] = Button(window, Rect(left, top, 190, 64))
+            .states_([[~drumLabFavoritePadLabel.(nil, index)]])
+            .action_({
+                var favorite;
+                favorite = if(index < favorites.size) { favorites[index] };
+                if(favorite.notNil) {
+                    selectedIndex = index;
+                    refresh.();
+                    if(~drumLabFavoriteSourceAvailable.(favorite)) {
+                        ~playRenderedFile.(favorite[\outputPath]);
+                        setStatus.("Playing pad A"
+                            ++ ~zeroPadNumber.(index + 1, 2) ++ ".");
+                    } {
+                        setStatus.("This source WAV is missing. Use Rebuild exact kit.");
+                    };
+                };
+            });
+    };
+
+    StaticText(window, Rect(20, 402, 820, 20))
+        .string_("Selected pad")
+        .font_(Font.default.boldVariant);
+    selectionText = StaticText(window, Rect(20, 426, 820, 42))
+        .string_("Select a filled pad.");
+
+    playButton = Button(window, Rect(20, 480, 130, 34))
+        .states_([["Play selected"]])
+        .action_({
+            if(selectedIndex.notNil) {
+                ~playRenderedFile.(favorites[selectedIndex][\outputPath]);
+            };
+        });
+
+    moveSelection = { |offset|
+        var newIndex;
+        newIndex = ~moveDrumLabFavorite.(favorites, selectedIndex, offset);
+        if(newIndex.notNil) {
+            selectedIndex = newIndex;
+            if(onFavoritesChanged.notNil) { onFavoritesChanged.value };
+            refresh.();
+            setStatus.("Moved selection to pad A"
+                ++ ~zeroPadNumber.(selectedIndex + 1, 2) ++ ".");
+        };
+    };
+    leftButton = Button(window, Rect(160, 480, 130, 34))
+        .states_([["Move earlier"]])
+        .action_({ moveSelection.(-1) });
+    rightButton = Button(window, Rect(300, 480, 130, 34))
+        .states_([["Move later"]])
+        .action_({ moveSelection.(1) });
+    removeButton = Button(window, Rect(440, 480, 130, 34))
+        .states_([["Remove pad"]])
+        .action_({
+            var removed;
+            if(selectedIndex.notNil) {
+                removed = favorites.removeAt(selectedIndex);
+                if(onFavoritesChanged.notNil) { onFavoritesChanged.value };
+                refresh.();
+                setStatus.("Removed " ++ removed[\job][\filename]
+                    ++ " from the kit.");
+            };
+        });
+
+    exportButton = Button(window, Rect(580, 480, 130, 34))
+        .states_([["Export WAVs"]])
+        .action_({
+            try {
+                var path;
+                path = ~exportDrumLabFavorites.(favorites);
+                setStatus.("Favorite kit exported to " ++ path);
+                path.openOS;
+            } { |error| setStatus.(error.errorString) };
+        });
+    rebuildButton = Button(window, Rect(720, 480, 120, 34))
+        .states_([["Rebuild exact"]])
+        .action_({
+            try {
+                var recipe;
+                recipe = ~favoriteKitRecipe.(
+                    favorites, profileName ? ~activeProfile
+                );
+                rebuildJobs = recipe[\jobs];
+                activeRebuild = true;
+                setStatus.("Rebuilding " ++ favorites.size
+                    ++ " favorite pad(s)...");
+                ~startJobs.(recipe[\jobs], recipe[\options]);
+            } { |error| setStatus.(error.errorString) };
+        });
+
+    statusText = StaticText(window, Rect(20, 536, 820, 54))
+        .string_("Ready. Empty pads remain available for future favorites.");
+    StaticText(window, Rect(20, 600, 820, 24))
+        .string_("[REBUILD] means the original preview WAV moved or was deleted; its synthesis recipe is preserved.")
+        .font_(Font.default.size_(11));
+
+    builderListener = { |event, data|
+        {
+            if(activeRebuild) {
+                switch(event,
+                    \started, { setBusy.(true) },
+                    \rendering, {
+                        setStatus.("Rebuilding " ++ data[\job][\filename] ++ "...")
+                    },
+                    \rendered, {
+                        var favoriteIndex;
+                        favoriteIndex = rebuildJobs.detectIndex { |job|
+                            job[\filename] == data[\job][\filename]
+                        };
+                        if(favoriteIndex.notNil
+                            and: { favoriteIndex < favorites.size }) {
+                            favorites[favoriteIndex][\outputPath] = data[\outputPath];
+                            favorites[favoriteIndex][\effectiveParameters] =
+                                data[\effectiveParameters].deepCopy;
+                        };
+                        refresh.();
+                    },
+                    \finished, {
+                        activeRebuild = false;
+                        setBusy.(false);
+                        if(onFavoritesChanged.notNil) {
+                            onFavoritesChanged.value;
+                        };
+                        setStatus.(if(data[\failed] > 0) {
+                            "Rebuild finished with " ++ data[\failed] ++ " failure(s)."
+                        } {
+                            "Exact favorite kit rebuilt in " ++ data[\outputDirectory]
+                        });
+                    }
+                );
+            };
+        }.defer;
+    };
+    ~addGenerationListener.(builderListener);
+
+    ~refreshFavoriteKitBuilder = { refresh.() };
+    window.onClose = {
+        ~removeGenerationListener.(builderListener);
+        ~refreshFavoriteKitBuilder = nil;
+        ~favoriteKitBuilderWindow = nil;
+    };
+    refresh.();
+    window.front;
+    window;
 };
 
 ~candidateSummary = { |job|
@@ -301,7 +611,7 @@
                 candidate = candidates[selectedIndex];
                 locks = IdentityDictionary.new;
                 lockBoxes.keysValuesDo { |name, box|
-                    locks[name] = box.value == 1;
+                    locks[name] = box.value;
                 };
                 variationCounter = variationCounter + 1;
                 mutationSeed = options[\randomSeed]
@@ -452,12 +762,14 @@
 };
 
 ~openDrumLab = {
-    var buildFamilyRows, buildOptions, cancelButton, countLabel;
+    var applySession, buildFamilyRows, buildOptions, cancelButton, countLabel;
     var descriptionText, dryRunButton, familyRows, familyScroll;
     var exportButton, favorites, generateButton, keepButton, lastPreview;
-    var listener, macroSliders, openButton, previewCounter, previewRequested;
+    var kitBuilderButton, listener, loadSessionButton, macroSliders, openButton;
+    var previewCounter, previewRequested, renderFavoritesButton;
     var profileMenu, profileNames, profileSymbols, progress, randomizeButton;
-    var seedBox, setBusy, setFavoriteButtons, setStatus, statusText, window;
+    var replayRecipeButton, saveSessionButton, seedBox, setBusy;
+    var setFavoriteButtons, setStatus, statusText, window;
 
     if(~drumLabWindow.notNil) {
         try { ~drumLabWindow.close } { };
@@ -477,7 +789,7 @@
 
     window = Window(
         "SC MPC Drum Lab",
-        Rect(80, 60, 760, 800),
+        Rect(80, 40, 760, 850),
         resizable: false
     );
     ~drumLabWindow = window;
@@ -538,6 +850,12 @@
             profileMenu.enabled = busy.not;
             randomizeButton.enabled = busy.not;
             seedBox.enabled = busy.not;
+            saveSessionButton.enabled = busy.not;
+            loadSessionButton.enabled = busy.not;
+            replayRecipeButton.enabled = busy.not;
+            renderFavoritesButton.enabled = busy.not
+                and: { favorites.notEmpty };
+            kitBuilderButton.enabled = busy.not;
             familyRows.values.do { |row|
                 row[\enabled].enabled = busy.not;
                 row[\count].enabled = busy.not;
@@ -555,6 +873,13 @@
             keepButton.states = [["Keep preview ("
                 ++ favorites.size ++ "/16)"]];
             exportButton.enabled = favorites.notEmpty;
+            if(renderFavoritesButton.notNil) {
+                renderFavoritesButton.enabled = favorites.notEmpty
+                    and: { ~generationRunning != true };
+            };
+            if(~refreshFavoriteKitBuilder.notNil) {
+                ~refreshFavoriteKitBuilder.value;
+            };
         }.defer;
     };
 
@@ -652,7 +977,7 @@
         enabled = List.new;
         macros = IdentityDictionary.new;
         familyRows.keysValuesDo { |engineName, row|
-            if(row[\enabled].value == 1) {
+            if(row[\enabled].value) {
                 enabled.add(engineName);
                 counts[engineName] = row[\count].value.asInteger.clip(1, 128);
             };
@@ -670,11 +995,61 @@
                 samplesPerEngine: 1,
                 engineCounts: counts,
                 enabledEngines: enabled.asArray,
-                macros: macros
+                macros: macros,
+                masterAmp: ~config[\masterAmp]
+                    ? ~profiles[profileSymbols[profileMenu.value]][\defaults][\masterAmp],
+                maxConcurrentRenders: ~config[\maxConcurrentRenders]
             )
         };
         result;
     };
+
+    applySession = { |session|
+        var counts, enabled, macros, missing, options, profileIndex;
+        options = session[\options];
+        profileIndex = profileSymbols.indexOf(options[\activeProfile]);
+        if(profileIndex.isNil) {
+            Error("Session profile is not currently available.").throw;
+        };
+        profileMenu.value = profileIndex;
+        buildFamilyRows.();
+        seedBox.value = options[\randomSeed] ? ~config[\randomSeed];
+        macros = options[\macros] ? ();
+        macroSliders.keysValuesDo { |name, slider|
+            slider.value = macros[name] ? 0.5;
+        };
+        enabled = options[\enabledEngines];
+        counts = options[\engineCounts] ? ();
+        familyRows.keysValuesDo { |engineName, row|
+            row[\enabled].value = enabled.includes(engineName);
+            row[\count].value = counts[engineName]
+                ? options[\samplesPerEngine]
+                ? 1;
+        };
+        favorites.clear;
+        session[\favorites].do { |favorite|
+            favorites.add(favorite.deepCopy);
+        };
+        ~loadedDrumLabSession = session.deepCopy;
+        lastPreview = nil;
+        missing = favorites.count { |favorite|
+            favorite[\outputPath].isNil
+                or: { File.exists(favorite[\outputPath]).not }
+        };
+        setFavoriteButtons.();
+        setStatus.("Loaded session '" ++ (session[\name] ? "Untitled") ++ "' with "
+            ++ favorites.size ++ " favorite(s)"
+            ++ if(missing > 0) {
+                "; " ++ missing ++ " source file(s) need rebuilding."
+            } {
+                "."
+            });
+    };
+
+    // Small public hooks make session restoration scriptable and testable
+    // without exposing individual GUI widgets.
+    ~applyDrumLabSessionToGui = { |session| applySession.(session) };
+    ~currentDrumLabGuiOptions = { buildOptions.() };
 
     profileMenu.value = profileSymbols.indexOf(~config[\activeProfile]) ? 0;
     profileMenu.action = { buildFamilyRows.() };
@@ -762,13 +1137,96 @@
             } { |error| setStatus.(error.errorString) };
         });
 
-    Button(window, Rect(400, 714, 150, 34))
+    Button(window, Rect(400, 714, 140, 34))
         .states_([["Clear favorites"]])
         .action_({
             favorites.clear;
             lastPreview = nil;
             setFavoriteButtons.();
             setStatus.("Favorites cleared; rendered source files were kept.");
+        });
+
+    kitBuilderButton = Button(window, Rect(550, 714, 190, 34))
+        .states_([["Edit 16-pad kit"]])
+        .action_({
+            ~openFavoriteKitBuilder.(
+                favorites,
+                profileSymbols[profileMenu.value],
+                {
+                    setFavoriteButtons.();
+                }
+            );
+        });
+
+    saveSessionButton = Button(window, Rect(20, 766, 165, 34))
+        .states_([["Save session"]])
+        .action_({
+            var options;
+            options = buildOptions.();
+            if(options.notNil) {
+                Dialog.savePanel({ |selectedPath|
+                    {
+                        try {
+                            var name, path, session;
+                            path = ~drumLabSessionPath.(selectedPath);
+                            name = PathName(path).fileNameWithoutExtension;
+                            session = ~saveDrumLabSession.(
+                                path, options, favorites, name
+                            );
+                            ~loadedDrumLabSession = session.deepCopy;
+                            setStatus.("Session saved to " ++ path);
+                        } { |error| setStatus.(error.errorString) };
+                    }.defer;
+                }, {
+                    setStatus.("Session save cancelled.");
+                }, path: ~config[\sessionDirectory]);
+            };
+        });
+
+    loadSessionButton = Button(window, Rect(195, 766, 165, 34))
+        .states_([["Load session"]])
+        .action_({
+            Dialog.openPanel({ |path|
+                {
+                    try {
+                        applySession.(~loadDrumLabSession.(path));
+                    } { |error| setStatus.(error.errorString) };
+                }.defer;
+            }, {
+                setStatus.("Session load cancelled.");
+            }, path: ~config[\sessionDirectory]);
+        });
+
+    replayRecipeButton = Button(window, Rect(370, 766, 165, 34))
+        .states_([["Replay recipe"]])
+        .action_({
+            Dialog.openPanel({ |path|
+                {
+                    try {
+                        setStatus.("Replaying recipe: "
+                            ++ PathName(path).fileName);
+                        ~replayRecipe.(path);
+                    } { |error| setStatus.(error.errorString) };
+                }.defer;
+            }, {
+                setStatus.("Recipe selection cancelled.");
+            }, path: ~config[\outputDirectory]);
+        });
+
+    renderFavoritesButton = Button(window, Rect(545, 766, 195, 34))
+        .states_([["Rebuild favorite kit"]])
+        .enabled_(favorites.notEmpty)
+        .action_({
+            try {
+                var options, recipe;
+                options = buildOptions.();
+                if(options.notNil and: { favorites.notEmpty }) {
+                    recipe = ~favoriteKitRecipe.(
+                        favorites, options[\activeProfile]
+                    );
+                    ~startJobs.(recipe[\jobs], recipe[\options]);
+                };
+            } { |error| setStatus.(error.errorString) };
         });
 
     listener = { |event, data|
@@ -823,6 +1281,11 @@
         if(~drumLabPreviewBuffer.notNil) {
             ~drumLabPreviewBuffer.free;
             ~drumLabPreviewBuffer = nil;
+        };
+        ~applyDrumLabSessionToGui = nil;
+        ~currentDrumLabGuiOptions = nil;
+        if(~favoriteKitBuilderWindow.notNil) {
+            try { ~favoriteKitBuilderWindow.close } { };
         };
         ~drumLabWindow = nil;
     };

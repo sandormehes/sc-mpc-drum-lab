@@ -42,6 +42,7 @@ loadProject = { |projectDirectory|
     profilePaths.do { |profilePath| profilePath.load };
 
     ~activateProfile.(~config[\activeProfile]);
+    (projectDirectory +/+ "lib/session.scd").load;
     (projectDirectory +/+ "lib/gui.scd").load;
 
     "".postln;
@@ -81,5 +82,3 @@ if(sourcePath.notNil) {
     );
 };
 )
-
-~openDrumLab.()

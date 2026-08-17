@@ -16,24 +16,36 @@ try {
     ~start.([\gqomTom, \dancehallRim, \grimeHat, \dancehallShaker]);
 
     Routine({
-        var exportDirectory, favorites, passed, recipe, replayJobs;
+        var exportDirectory, favoriteRebuildDirectory, favoriteRecipe;
+        var favorites, firstFavorite, passed;
+        var recipe, replayJobs, secondFavorite;
         var variationJob, variationOptions, variationRecipe;
         var variationRecipePath;
         while({ ~generationRunning == true }, { 0.1.wait });
 
         recipe = ~recipePath.load;
         replayJobs = ~planJobs.(nil, recipe[\options]);
-        favorites = [
-            (
-                job: ~generationState[\jobs][0],
-                outputPath: ~currentRunDirectory +/+ "GQTOM_001.wav"
-            ),
-            (
-                job: ~generationState[\jobs][1],
-                outputPath: ~currentRunDirectory +/+ "DHRIM_001.wav"
-            )
-        ];
+        firstFavorite = (
+            job: ~generationState[\jobs][0],
+            outputPath: ~currentRunDirectory +/+ "GQTOM_001.wav",
+            effectiveParameters:
+                ~generationState[\jobs][0][\parameters].deepCopy
+        );
+        firstFavorite[\effectiveParameters][\amp] =
+            firstFavorite[\effectiveParameters][\amp]
+            * ~runtimeConfig[\masterAmp];
+        secondFavorite = (
+            job: ~generationState[\jobs][1],
+            outputPath: ~currentRunDirectory +/+ "DHRIM_001.wav",
+            effectiveParameters:
+                ~generationState[\jobs][1][\parameters].deepCopy
+        );
+        secondFavorite[\effectiveParameters][\amp] =
+            secondFavorite[\effectiveParameters][\amp]
+            * ~runtimeConfig[\masterAmp];
+        favorites = [firstFavorite, secondFavorite];
         exportDirectory = ~exportDrumLabFavorites.(favorites);
+        favoriteRecipe = (exportDirectory +/+ "favorites_recipe.scd").load;
 
         passed = ~generationState.notNil
             and: { ~generationState[\failures].isEmpty }
@@ -60,7 +72,38 @@ try {
             }
             and: {
                 File.exists(exportDirectory +/+ "favorites_manifest.txt")
+            }
+            and: {
+                File.exists(exportDirectory +/+ "favorites_recipe.scd")
+            }
+            and: { favoriteRecipe[\recipeRole] == \favoriteKit }
+            and: { favoriteRecipe[\jobs].size == 2 }
+            and: {
+                (
+                    favoriteRecipe[\jobs][0][\parameters][\amp]
+                    - firstFavorite[\effectiveParameters][\amp]
+                ).abs < 0.000001
             };
+
+        if(passed) {
+            ~startJobs.(favoriteRecipe[\jobs], favoriteRecipe[\options]);
+            while({ ~generationRunning == true }, { 0.1.wait });
+            favoriteRebuildDirectory = ~currentRunDirectory;
+            passed = ~generationState[\failures].isEmpty
+                and: { ~generationState[\completed] == 2 }
+                and: {
+                    File.exists(favoriteRebuildDirectory +/+ "A01_GQTOM.WAV")
+                }
+                and: {
+                    File.exists(favoriteRebuildDirectory +/+ "A02_DHRIM.WAV")
+                }
+                and: {
+                    (
+                        ~generationState[\jobs][0][\parameters][\amp]
+                        - firstFavorite[\effectiveParameters][\amp]
+                    ).abs < 0.000001
+                };
+        };
 
         if(passed) {
             variationOptions = recipe[\options];

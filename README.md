@@ -19,6 +19,8 @@ its own run directory and includes a validation-aware manifest.
 2. Evaluate the entire file:
    - macOS: `Cmd+A`, then `Cmd+Enter`
    - Windows/Linux: `Ctrl+A`, then `Ctrl+Enter`
+   - If your editor does not provide the current document path to
+     SuperCollider, select this project's `main.scd` in the file picker.
 3. Choose a profile, enable the sound families you want, and set a quantity for
    each family.
 4. Use **Preview** for one sound, **Explore** for an eight-candidate browser, or
@@ -56,6 +58,38 @@ Rejecting a candidate never deletes its source run. A close variation records
 its source filename, mutation distance, lock choices, complete parameters, and
 synthesis seed. Its `recipe.scd` therefore replays the exact custom job rather
 than generating an approximation.
+
+### Sessions and reopening work
+
+v0.5 adds persistent lab sessions to the bottom of the main control panel:
+
+- **Save session** stores the profile, seed, macros, enabled families,
+  per-family quantities, and up to 16 favorites.
+- **Load session** restores those controls and favorites into the GUI.
+- **Replay recipe** selects any generated `recipe.scd` and renders it again.
+- **Rebuild favorite kit** regenerates the current favorites from their exact
+  effective parameters, even when their original preview WAVs are unavailable.
+
+Sessions are stored under `sessions/` by default and are ignored by Git. The
+loader reports missing favorite source files while preserving their jobs for
+rebuilding. Session and recipe files are executable SuperCollider data, so load
+only files you created or trust.
+
+### Visual 16-pad kit builder
+
+v0.6 adds **Edit 16-pad kit** to the main control panel. It opens an MPC-style
+four-by-four view of the current favorites where you can:
+
+- click any filled pad to select and audition it;
+- move the selected sound earlier or later in the exported pad order;
+- remove sounds without deleting their rendered WAV files;
+- export all available source WAVs with `A01` through `A16` names; or
+- rebuild the exact kit when previews have moved or been deleted.
+
+Pads whose original audio is unavailable show `[REBUILD]`. Rebuilding uses the
+stored effective synthesis parameters, updates the favorite sources to the new
+WAV files, and makes the rebuilt kit immediately exportable again. Pad order is
+preserved when saving and loading v0.6 sessions.
 
 ## Command workflow
 
@@ -98,6 +132,7 @@ Useful discovery and status commands:
 ~listFamilies.();
 ~status.();
 ~openDrumLab.();
+~openFavoriteKitBuilder.(~drumLabFavorites);
 ```
 
 ## Configuration
@@ -203,6 +238,10 @@ counts, parameter locks, seed, and level settings:
 ~replayRecipe.("/full/path/to/recipe.scd");
 ```
 
+Favorite exports also include `favorites_recipe.scd`. It uses pad-oriented
+filenames and the already-scaled effective parameters, preventing master level
+from being applied twice when the kit is rebuilt.
+
 Generated output is ignored by Git. Publish selected packs as release downloads
 or copy them directly to removable media rather than committing each run.
 
@@ -301,8 +340,10 @@ sc-mpc-drum-lab/
 │   ├── renderer.scd
 │   ├── manifest.scd
 │   ├── generator.scd
+│   ├── session.scd
 │   └── gui.scd
 ├── presets/
+├── sessions/
 ├── tests/
 ├── scripts/
 ├── output/
