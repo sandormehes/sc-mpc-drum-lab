@@ -3,6 +3,97 @@
 (
 ~drumLabSessionSchemaVersion = 1;
 
+~encodeDrumLabJson = { |value|
+    var encode;
+    encode = { |item|
+        var escaped, parts;
+        if(item.isNil) {
+            "null"
+        } {
+            if(item === true) {
+                "true"
+            } {
+                if(item === false) {
+                    "false"
+                } {
+                    if(item.isInteger) {
+                        "{\"$integer\":" ++ item.asString ++ "}"
+                    } {
+                        if(item.isNumber) {
+                            "{\"$float\":" ++ encode.(item.asString) ++ "}"
+                        } {
+                        if(item.isKindOf(Symbol)) {
+                            "{\"$symbol\":" ++ encode.(item.asString) ++ "}"
+                        } {
+                            if(item.isKindOf(String)) {
+                                escaped = item
+                                    .replace("\\", "\\\\")
+                                    .replace("\"", "\\\"")
+                                    .replace(Char.nl.asString, "\\n")
+                                    .replace(Char.tab.asString, "\\t");
+                                "\"" ++ escaped ++ "\""
+                            } {
+                                if(item.isKindOf(Dictionary)) {
+                                    parts = List.new;
+                                    item.keysValuesDo { |key, child|
+                                        parts.add(encode.(key.asString)
+                                            ++ ":" ++ encode.(child));
+                                    };
+                                    "{" ++ parts.join(",") ++ "}"
+                                } {
+                                    if(item.isSequenceableCollection) {
+                                        "[" ++ item.collect { |child|
+                                            encode.(child)
+                                        }.join(",") ++ "]"
+                                    } {
+                                        Error("Unsupported value in Drum Lab JSON: "
+                                            ++ item.class).throw;
+                                    }
+                                }
+                            }
+                        }}
+                    }
+                }
+            }
+        }
+    };
+    encode.(value);
+};
+
+~decodeDrumLabJson = { |value|
+    var decode;
+    decode = { |item|
+        var floatValue, integerValue, result, symbolName;
+        if(item.isKindOf(Dictionary)) {
+            symbolName = item.at("$symbol") ? item.at('$symbol');
+            integerValue = item.at("$integer") ? item.at('$integer');
+            floatValue = item.at("$float") ? item.at('$float');
+            if(integerValue.notNil and: { item.size == 1 }) {
+                integerValue.asInteger
+            } {
+            if(floatValue.notNil and: { item.size == 1 }) {
+                floatValue.asFloat
+            } {
+            if(symbolName.notNil and: { item.size == 1 }) {
+                symbolName.asSymbol
+            } {
+                result = Event.new;
+                item.keysValuesDo { |key, child|
+                    result[key.asString.asSymbol] = decode.(child);
+                };
+                result;
+            }}}
+        } {
+            if(item.isArray or: { item.isKindOf(List) }) {
+                item.collect { |child| decode.(child) }.asArray
+            } {
+                item
+            }
+        }
+    };
+    decode.(value);
+};
+
 ~validateDrumLabSessionOptions = { |options|
     var counts, enabled, macros, profile;
     if(options.isKindOf(Dictionary).not) {
@@ -32,6 +123,7 @@
             Error("Session macros must be an Event or Dictionary.").throw;
         };
         macros.keysValuesDo { |name, value|
+            name = name.asString.asSymbol;
             if([\weight, \punch, \brightness, \tail, \dirt].includes(name).not
                 or: { value.isNumber.not }
                 or: { value < 0 or: { value > 1 } }) {
@@ -90,17 +182,35 @@
     file = File(path, "w");
     if(file.isOpen.not) { Error("Cannot write file: " ++ path).throw };
     protect {
-        file.write(value.asCompileString ++ "\n");
+        file.write(~encodeDrumLabJson.(value) ++ "\n");
     } {
         file.close;
     };
     path;
 };
 
-~drumLabSessionPath = { |path|
+~readDrumLabDataFile = { |path|
     var extension;
-    extension = PathName(path).extension ? "";
-    if(extension.toLower != "scd") { path = path ++ ".scd" };
+    if(path.isNil or: { File.exists(path).not }) {
+        Error("Data file was not found: " ++ path).throw;
+    };
+    extension = (PathName(path).extension ? "").asString.toLower;
+    if(extension == "scd") {
+        "Loading a legacy executable .scd data file; use only trusted files."
+            .warn;
+        path.load
+    } {
+        ~decodeDrumLabJson.(path.parseJSONFile)
+    };
+};
+
+~drumLabSessionPath = { |path|
+    var lowerPath;
+    lowerPath = path.toLower;
+    if(lowerPath.endsWith(".json").not
+        and: { lowerPath.endsWith(".scd").not }) {
+        path = path ++ ".json"
+    };
     path;
 };
 
@@ -117,7 +227,7 @@
     if(path.isNil or: { File.exists(path).not }) {
         Error("Session file was not found: " ++ path).throw;
     };
-    session = path.load;
+    session = ~readDrumLabDataFile.(path);
     if(session.isKindOf(Dictionary).not
         or: { session[\kind] != \drumLabSession }) {
         Error("The selected file is not a Drum Lab session.").throw;

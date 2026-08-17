@@ -56,7 +56,7 @@ Select **Explore** beside any sound family to open the v0.4 candidate browser:
 
 Rejecting a candidate never deletes its source run. A close variation records
 its source filename, mutation distance, lock choices, complete parameters, and
-synthesis seed. Its `recipe.scd` therefore replays the exact custom job rather
+synthesis seed. Its `recipe.json` therefore replays the exact custom job rather
 than generating an approximation.
 
 ### Sessions and reopening work
@@ -66,14 +66,15 @@ v0.5 adds persistent lab sessions to the bottom of the main control panel:
 - **Save session** stores the profile, seed, macros, enabled families,
   per-family quantities, and up to 16 favorites.
 - **Load session** restores those controls and favorites into the GUI.
-- **Replay recipe** selects any generated `recipe.scd` and renders it again.
+- **Replay recipe** selects any generated `recipe.json` and renders it again.
 - **Rebuild favorite kit** regenerates the current favorites from their exact
   effective parameters, even when their original preview WAVs are unavailable.
 
 Sessions are stored under `sessions/` by default and are ignored by Git. The
 loader reports missing favorite source files while preserving their jobs for
-rebuilding. Session and recipe files are executable SuperCollider data, so load
-only files you created or trust.
+rebuilding. New sessions and recipes use schema-validated JSON rather than
+executable SuperCollider source. Legacy `.scd` data files remain loadable for
+backward compatibility and should only be opened when trusted.
 
 ### Visual 16-pad kit builder
 
@@ -216,7 +217,7 @@ output/20260810214530_thickClub/
 ```
 
 The directory contains completed WAV files, `sample_manifest.txt`, and a
-reusable `recipe.scd`. Previous runs are not overwritten. Each render is first
+reusable `recipe.json`. Previous runs are not overwritten. Each render is first
 written to a temporary file and is promoted only after these checks pass:
 
 - mono channel layout
@@ -235,10 +236,10 @@ Regenerate a saved pack or close variation from its exact profile, family
 counts, parameter locks, seed, and level settings:
 
 ```supercollider
-~replayRecipe.("/full/path/to/recipe.scd");
+~replayRecipe.("/full/path/to/recipe.json");
 ```
 
-Favorite exports also include `favorites_recipe.scd`. It uses pad-oriented
+Favorite exports also include `favorites_recipe.json`. It uses pad-oriented
 filenames and the already-scaled effective parameters, preventing master level
 from being applied twice when the kit is rebuilt.
 
@@ -311,6 +312,9 @@ If SuperCollider is installed somewhere unusual:
 SCLANG_BIN=/full/path/to/sclang ./scripts/test.sh
 ```
 
+On a universal macOS installation, an architecture can also be selected
+explicitly, for example `SCLANG_ARCH=x86_64 ./scripts/test.sh`.
+
 GitHub Actions runs the same smoke test on pushes and pull requests. Full audio
 validation happens automatically during every local render. To exercise the
 entire offline-rendering path with the four focused percussion voices (using
@@ -341,6 +345,7 @@ sc-mpc-drum-lab/
 │   ├── manifest.scd
 │   ├── generator.scd
 │   ├── session.scd
+│   ├── favorites.scd
 │   └── gui.scd
 ├── presets/
 ├── sessions/

@@ -1,10 +1,13 @@
 // Language-only smoke tests. No audio files are rendered.
 
 (
-var assert, customJobs, favorite, favoriteList, favoriteRecipe, filenames;
+var assert, assertThrows, customJobs, favorite, favoriteList, favoriteRecipe;
+var filenames;
 var labSession;
 var loadedSession, macroJobs, originalJobs, projectRoot, repeatJobs;
 var repeatVariation, selectedJobs, session, sessionJobs, sessionPath;
+var randomAfterPlanning, randomExpected, randomState, runningConfig;
+var originalPump, originalWriteEntry, settlementState;
 var sessionOptions, thickJobs, variationJob;
 
 try {
@@ -17,6 +20,12 @@ try {
         if(condition.not) {
             Error("Smoke test failed: " ++ message).throw;
         };
+    };
+    assertThrows = { |function, message|
+        var didThrow;
+        didThrow = false;
+        try { function.value } { didThrow = true };
+        assert.(didThrow, message);
     };
 
     ~config[\activeProfile] = \original;
@@ -52,6 +61,24 @@ try {
             == thickJobs[0][\parameters][\seed],
         "sound seeds should be reproducible"
     );
+    thisThread.randSeed = 880055;
+    randomState = thisThread.randData.copy;
+    ~planJobs.();
+    randomAfterPlanning = 1000000.rand;
+    thisThread.randData = randomState;
+    randomExpected = 1000000.rand;
+    assert.(
+        randomAfterPlanning == randomExpected,
+        "planning should preserve the caller's random stream"
+    );
+    runningConfig = ~runtimeConfig;
+    ~generationRunning = true;
+    ~planJobs.(nil, (activeProfile: \original));
+    assert.(
+        ~runtimeConfig === runningConfig,
+        "planning must not replace active-run configuration"
+    );
+    ~generationRunning = false;
     selectedJobs = ~planJobs.([\grimeSnare], (
         activeProfile: \thickClub,
         samplesPerEngine: 6,
@@ -149,7 +176,7 @@ try {
         effectiveParameters: thickJobs[0][\parameters].deepCopy
     );
     favorite[\effectiveParameters][\amp] = 0.61;
-    sessionPath = projectRoot +/+ "output/.smoke_session.scd";
+    sessionPath = PathName.tmp +/+ "sc-mpc-drum-lab-smoke-session.json";
     ~removeFileIfExists.(sessionPath);
     labSession = ~saveDrumLabSession.(
         sessionPath, sessionOptions, [favorite], "Smoke Session"
@@ -211,6 +238,59 @@ try {
     assert.(
         filenames.asSet.size == filenames.size,
         "planned filenames should be unique"
+    );
+    assertThrows.({
+        ~validateRenderJobs.([(
+            family: \kick,
+            engine: \experimentalKick,
+            parameters: (),
+            filename: "../UNSAFE.wav",
+            duration: 1
+        )]);
+    }, "job validation should reject directory traversal");
+    assertThrows.({
+        ~validateRenderJobs.([
+            thickJobs[0].copy,
+            thickJobs[0].copy
+        ]);
+    }, "job validation should reject duplicate filenames");
+    originalPump = ~pumpJobQueue;
+    originalWriteEntry = ~writeManifestEntry;
+    settlementState = (
+        jobs: [thickJobs[0]],
+        run: (),
+        active: 1,
+        processed: 0,
+        completed: 0,
+        failures: List.new,
+        settled: Set.new
+    );
+    protect {
+        ~pumpJobQueue = { };
+        ~writeManifestEntry = {
+            Error("simulated manifest failure").throw;
+        };
+        ~settleGenerationJob.(settlementState, 0, true, (
+            outputPath: "test.wav",
+            validation: (),
+            finalParameters: ()
+        ));
+        ~settleGenerationJob.(settlementState, 0, false, (
+            message: "duplicate callback"
+        ));
+    } {
+        ~pumpJobQueue = originalPump;
+        ~writeManifestEntry = originalWriteEntry;
+    };
+    assert.(
+        settlementState[\active] == 0
+            and: { settlementState[\processed] == 1 }
+            and: { settlementState[\completed] == 1 },
+        "job settlement should happen exactly once after callback failures"
+    );
+    assert.(
+        settlementState[\failures].size == 1,
+        "manifest failures should be recorded without stalling the scheduler"
     );
     assert.(
         ~drumDefs[\experimentalKick].notNil

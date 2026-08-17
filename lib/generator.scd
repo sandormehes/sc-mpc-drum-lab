@@ -180,59 +180,55 @@
     };
 };
 
-~activateProfile = { |profileName, overrides|
-    var profile, defaults;
-
-    profile = ~profiles[profileName];
-    if(profile.isNil) {
-        Error("Unknown profile: " ++ profileName).throw;
+~validateRuntimeConfig = { |runtimeConfig|
+    if(runtimeConfig[\samplesPerEngine].isInteger.not
+        or: { runtimeConfig[\samplesPerEngine] <= 0 }) {
+        Error("samplesPerEngine must be a positive integer.").throw;
+    };
+    if(runtimeConfig[\randomSeed].isInteger.not) {
+        Error("randomSeed must be an integer.").throw;
+    };
+    if(runtimeConfig[\masterAmp].isNumber.not
+        or: { runtimeConfig[\masterAmp] <= 0 }) {
+        Error("masterAmp must be a positive number.").throw;
+    };
+    if(runtimeConfig[\enabledEngines].isArray.not
+        or: { runtimeConfig[\enabledEngines].isEmpty }) {
+        Error("enabledEngines must be a non-empty Array.").throw;
+    };
+    if(runtimeConfig[\maxConcurrentRenders].isInteger.not
+        or: { runtimeConfig[\maxConcurrentRenders] <= 0 }) {
+        Error("maxConcurrentRenders must be a positive integer.").throw;
+    };
+    if(runtimeConfig[\sampleRate].isNumber.not
+        or: { runtimeConfig[\sampleRate] <= 0 }) {
+        Error("sampleRate must be a positive number.").throw;
+    };
+    if(runtimeConfig[\outputDirectory].isKindOf(String).not) {
+        Error("outputDirectory must be a path String.").throw;
     };
 
-    ~runtimeConfig = ~config.deepCopy;
-    defaults = profile[\defaults];
-    defaults.keysValuesDo { |key, value|
-        if(~runtimeConfig[key].isNil) {
-            ~runtimeConfig[key] = value.deepCopy;
-        };
+    if(runtimeConfig[\engineCounts].notNil
+        and: { runtimeConfig[\engineCounts].isKindOf(Dictionary).not }) {
+        Error("engineCounts must be an Event or Dictionary.").throw;
     };
-
-    if(overrides.notNil) {
-        overrides.keysValuesDo { |key, value|
-            if(key != \activeProfile) {
-                ~runtimeConfig[key] = value.deepCopy;
+    if(runtimeConfig[\macros].notNil
+        and: { runtimeConfig[\macros].isKindOf(Dictionary).not }) {
+        Error("macros must be an Event or Dictionary.").throw;
+    };
+    if(runtimeConfig[\macros].notNil) {
+        runtimeConfig[\macros].keysValuesDo { |name, value|
+            name = name.asString.asSymbol;
+            if([\weight, \punch, \brightness, \tail, \dirt]
+                .includes(name).not
+                or: { value.isNumber.not }
+                or: { value < 0 or: { value > 1 } }) {
+                Error("Invalid musical macro: " ++ name).throw;
             };
         };
     };
 
-    if(~runtimeConfig[\samplesPerEngine].isInteger.not
-        or: { ~runtimeConfig[\samplesPerEngine] <= 0 }) {
-        Error("samplesPerEngine must be a positive integer.").throw;
-    };
-    if(~runtimeConfig[\masterAmp].isNumber.not
-        or: { ~runtimeConfig[\masterAmp] <= 0 }) {
-        Error("masterAmp must be a positive number.").throw;
-    };
-    if(~runtimeConfig[\enabledEngines].isArray.not
-        or: { ~runtimeConfig[\enabledEngines].isEmpty }) {
-        Error("enabledEngines must be a non-empty Array.").throw;
-    };
-    if(~runtimeConfig[\maxConcurrentRenders].isInteger.not
-        or: { ~runtimeConfig[\maxConcurrentRenders] <= 0 }) {
-        Error("maxConcurrentRenders must be a positive integer.").throw;
-    };
-
-    if(~runtimeConfig[\engineCounts].notNil
-        and: {
-            ~runtimeConfig[\engineCounts].isKindOf(Dictionary).not
-        }) {
-        Error("engineCounts must be an Event or Dictionary.").throw;
-    };
-    if(~runtimeConfig[\macros].notNil
-        and: { ~runtimeConfig[\macros].isKindOf(Dictionary).not }) {
-        Error("macros must be an Event or Dictionary.").throw;
-    };
-
-    ~runtimeConfig[\enabledEngines].do { |engineName|
+    runtimeConfig[\enabledEngines].do { |engineName|
         var count, spec;
         spec = ~generatorSpecs[engineName];
         if(spec.isNil) {
@@ -241,37 +237,75 @@
         if(~drumDefs[spec[\synth]].isNil) {
             Error("Missing SynthDef: " ++ spec[\synth]).throw;
         };
-        count = if(~runtimeConfig[\engineCounts].notNil) {
-            ~runtimeConfig[\engineCounts][engineName]
+        count = if(runtimeConfig[\engineCounts].notNil) {
+            runtimeConfig[\engineCounts][engineName]
         };
-        if(count.notNil and: {
-            count.isInteger.not or: { count <= 0 }
-        }) {
+        if(count.notNil and: { count.isInteger.not or: { count <= 0 } }) {
             Error(
                 "engineCounts[" ++ engineName ++ "] must be a positive integer."
             ).throw;
         };
     };
+    runtimeConfig;
+};
 
+~resolveProfileContext = { |profileName, overrides|
+    var defaults, profile, runtimeConfig;
+
+    profile = ~profiles[profileName];
+    if(profile.isNil) {
+        Error("Unknown profile: " ++ profileName).throw;
+    };
+
+    runtimeConfig = ~config.deepCopy;
+    defaults = profile[\defaults];
+    defaults.keysValuesDo { |key, value|
+        if(runtimeConfig[key].isNil) {
+            runtimeConfig[key] = value.deepCopy;
+        };
+    };
+
+    if(overrides.notNil) {
+        overrides.keysValuesDo { |key, value|
+            if(key != \activeProfile) {
+                runtimeConfig[key] = value.deepCopy;
+            };
+        };
+    };
+    runtimeConfig[\activeProfile] = profileName;
+    ~validateRuntimeConfig.(runtimeConfig);
+    (
+        profileName: profileName,
+        profileDefinition: profile,
+        config: runtimeConfig
+    );
+};
+
+~activateProfile = { |profileName, overrides|
+    var context;
+    context = ~resolveProfileContext.(profileName, overrides);
+    ~runtimeConfig = context[\config];
     ~activeProfile = profileName;
-    ~activeProfileDefinition = profile;
-    profile;
+    ~activeProfileDefinition = context[\profileDefinition];
+    ~activeProfileDefinition;
 };
 
-~engineSampleCount = { |engineName|
+~engineSampleCount = { |engineName, runtimeConfig|
     var count, counts;
-    counts = ~runtimeConfig[\engineCounts];
+    runtimeConfig = runtimeConfig ? ~runtimeConfig;
+    counts = runtimeConfig[\engineCounts];
     count = if(counts.notNil) { counts[engineName] };
-    count ? ~runtimeConfig[\samplesPerEngine];
+    count ? runtimeConfig[\samplesPerEngine];
 };
 
-~jobSeed = { |engineName, index|
+~jobSeed = { |engineName, index, runtimeConfig|
     var nameValue;
+    runtimeConfig = runtimeConfig ? ~runtimeConfig;
     nameValue = 0;
     engineName.asString.do { |character, characterIndex|
         nameValue = nameValue + (character.ascii * (characterIndex + 1));
     };
-    (((~runtimeConfig[\randomSeed].asInteger
+    (((runtimeConfig[\randomSeed].asInteger
         + (nameValue * 1009)
         + ((index + 1) * 7919)).abs % 2147483646) + 1).asInteger;
 };
@@ -363,7 +397,8 @@
 
 ~makeVariationJob = {
     |sourceJob, locks, amount = 0.25, seed, variationIndex = 1, options|
-    var isLocked, parameters, profileName, sourceParameters, spec;
+    var context, isLocked, parameters, previousSeed, profileName;
+    var runtimeConfig, sourceParameters, spec;
 
     if(sourceJob.isNil) { Error("Select a candidate first.").throw };
     spec = ~generatorSpecs[sourceJob[\family]];
@@ -371,16 +406,23 @@
         Error("Cannot vary unknown family: " ++ sourceJob[\family]).throw;
     };
 
-    if(options.notNil) {
-        profileName = options[\activeProfile] ? ~config[\activeProfile];
-        ~activateProfile.(profileName, options);
-    };
+    profileName = if(options.notNil) { options[\activeProfile] };
+    profileName = profileName ? ~config[\activeProfile];
+    context = ~resolveProfileContext.(profileName, options);
+    runtimeConfig = context[\config];
     amount = amount.asFloat.clip(0.02, 1);
-    seed = seed ? ~jobSeed.(sourceJob[\family], variationIndex + 1000);
-    thisThread.randSeed = seed;
-    parameters = ~applyMusicalMacros.(
-        spec[\generator].value, ~runtimeConfig[\macros]
+    seed = seed ? ~jobSeed.(
+        sourceJob[\family], variationIndex + 1000, runtimeConfig
     );
+    previousSeed = thisThread.randData.copy;
+    protect {
+        thisThread.randSeed = seed;
+        parameters = ~applyMusicalMacros.(
+            spec[\generator].value, runtimeConfig[\macros]
+        );
+    } {
+        thisThread.randData = previousSeed;
+    };
     sourceParameters = sourceJob[\parameters];
 
     sourceParameters.keysValuesDo { |key, sourceValue|
@@ -457,42 +499,101 @@
     filename;
 };
 
-~makeJobs = {
-    var jobs;
-    jobs = List.new;
-    thisThread.randSeed = ~runtimeConfig[\randomSeed];
-
-    ~runtimeConfig[\enabledEngines].do { |engineName|
-        var spec;
-        spec = ~generatorSpecs[engineName];
-
-        ~engineSampleCount.(engineName).do { |index|
-            var parameters, seed;
-            seed = ~jobSeed.(engineName, index);
-            thisThread.randSeed = seed;
-            parameters = spec[\generator].value;
-            parameters = ~applyMusicalMacros.(
-                parameters, ~runtimeConfig[\macros]
-            );
-            parameters[\seed] = seed;
-            jobs.add((
-                family: engineName,
-                engine: spec[\synth],
-                parameters: parameters,
-                filename: ~sampleFilename.(spec[\prefix], index + 1),
-                duration: spec[\duration]
-            ));
+~validateRenderJobs = { |jobs|
+    var allowedFilenameCharacters, filenames;
+    if(jobs.isArray.not or: { jobs.isEmpty }) {
+        Error("Render jobs must be a non-empty Array.").throw;
+    };
+    allowedFilenameCharacters =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-";
+    filenames = Set.new;
+    jobs.do { |job|
+        var extension, filename, stem;
+        if(job.isKindOf(Dictionary).not) {
+            Error("Every render job must be an Event or Dictionary.").throw;
         };
+        if(~drumDefs[job[\engine]].isNil) {
+            Error("Unknown render-job engine: " ++ job[\engine]).throw;
+        };
+        if(job[\parameters].isKindOf(Dictionary).not) {
+            Error("Render-job parameters must be an Event or Dictionary.").throw;
+        };
+        job[\parameters].keysValuesDo { |name, value|
+            if(value.isNumber.not) {
+                Error("Render-job parameter must be numeric: " ++ name).throw;
+            };
+        };
+        if(job[\duration].isNumber.not or: { job[\duration] <= 0 }) {
+            Error("Render-job duration must be a positive number.").throw;
+        };
+        filename = job[\filename];
+        if(filename.isKindOf(String).not
+            or: { filename.isEmpty }
+            or: { filename.find("/").notNil }
+            or: { filename.find("\\").notNil }
+            or: { filename.beginsWith(".") }) {
+            Error("Unsafe render-job filename: " ++ filename).throw;
+        };
+        extension = PathName(filename).extension ? "";
+        if(extension.toLower != "wav") {
+            Error("Render-job filename must use the WAV extension: "
+                ++ filename).throw;
+        };
+        stem = PathName(filename).fileNameWithoutExtension;
+        stem.do { |character|
+            if(allowedFilenameCharacters.includes(character).not) {
+                Error("Unsafe character in render-job filename: "
+                    ++ filename).throw;
+            };
+        };
+        if(filenames.includes(filename.toLower)) {
+            Error("Duplicate render-job filename: " ++ filename).throw;
+        };
+        filenames.add(filename.toLower);
+    };
+    jobs;
+};
+
+~makeJobs = { |runtimeConfig|
+    var jobs, previousSeed;
+    runtimeConfig = runtimeConfig ? ~runtimeConfig;
+    jobs = List.new;
+    previousSeed = thisThread.randData.copy;
+    protect {
+        runtimeConfig[\enabledEngines].do { |engineName|
+            var spec;
+            spec = ~generatorSpecs[engineName];
+
+            ~engineSampleCount.(engineName, runtimeConfig).do { |index|
+                var parameters, seed;
+                seed = ~jobSeed.(engineName, index, runtimeConfig);
+                thisThread.randSeed = seed;
+                parameters = spec[\generator].value;
+                parameters = ~applyMusicalMacros.(
+                    parameters, runtimeConfig[\macros]
+                );
+                parameters[\seed] = seed;
+                jobs.add((
+                    family: engineName,
+                    engine: spec[\synth],
+                    parameters: parameters,
+                    filename: ~sampleFilename.(spec[\prefix], index + 1),
+                    duration: spec[\duration]
+                ));
+            };
+        };
+    } {
+        thisThread.randData = previousSeed;
     };
     jobs.asArray;
 };
 
-~planJobs = { |engineNames, options|
-    var jobs, profileName;
+~planJobBundle = { |engineNames, options|
+    var context, jobs, profileName;
     profileName = if(options.notNil) { options[\activeProfile] };
     profileName = profileName ? ~config[\activeProfile];
-    ~activateProfile.(profileName, options);
-    jobs = ~makeJobs.();
+    context = ~resolveProfileContext.(profileName, options);
+    jobs = ~makeJobs.(context[\config]);
 
     if(engineNames.notNil) {
         jobs = jobs.select { |job| engineNames.asArray.includes(job[\family]) };
@@ -500,16 +601,29 @@
     if(jobs.isEmpty) {
         Error("No render jobs matched the requested engines.").throw;
     };
-    jobs;
+    (jobs: jobs, context: context);
+};
+
+~planJobs = { |engineNames, options|
+    var bundle;
+    bundle = ~planJobBundle.(engineNames, options);
+    ~lastPlannedContext = bundle[\context];
+    if(~generationRunning != true) {
+        ~runtimeConfig = bundle[\context][\config];
+        ~activeProfile = bundle[\context][\profileName];
+        ~activeProfileDefinition = bundle[\context][\profileDefinition];
+    };
+    bundle[\jobs];
 };
 
 ~dryRun = { |engineNames, options|
-    var approximateBytes, approximateSeconds, families, jobs;
-    jobs = ~planJobs.(engineNames, options);
+    var approximateBytes, approximateSeconds, bundle, families, jobs;
+    bundle = ~planJobBundle.(engineNames, options);
+    jobs = bundle[\jobs];
     families = jobs.collect { |job| job[\family] }.asSet.asArray;
     approximateSeconds = jobs.sum { |job| job[\duration] };
     approximateBytes = approximateSeconds
-        * ~runtimeConfig[\sampleRate] * 2;
+        * bundle[\context][\config][\sampleRate] * 2;
 
     ("Planned " ++ jobs.size ++ " renders across "
         ++ families.size ++ " families:").postln;
@@ -600,7 +714,12 @@
         }) {
 
         ~generationRunning = false;
-        ~finalizeManifest.(state);
+        try {
+            ~finalizeManifest.(state, state[\run]);
+        } { |error|
+            state[\failures].add((job: nil, error: error.errorString));
+            ("Could not finalize manifest: " ++ error.errorString).warn;
+        };
         "".postln;
 
         if(state[\cancelled]) {
@@ -610,32 +729,92 @@
         };
         ("Completed: " ++ state[\completed]).postln;
         ("Failed:    " ++ state[\failures].size).postln;
-        ("Samples:   " ++ ~currentRunDirectory).postln;
-        ("Manifest:  " ++ ~manifestPath).postln;
-        ("Recipe:    " ++ ~recipePath).postln;
+        ("Samples:   " ++ state[\run][\directory]).postln;
+        ("Manifest:  " ++ state[\run][\manifestPath]).postln;
+        ("Recipe:    " ++ state[\run][\recipePath]).postln;
         ~notifyGeneration.(\finished, (
             completed: state[\completed],
             failed: state[\failures].size,
             cancelled: state[\cancelled],
             total: state[\jobs].size,
-            outputDirectory: ~currentRunDirectory,
-            manifestPath: ~manifestPath,
-            recipePath: ~recipePath
+            outputDirectory: state[\run][\directory],
+            manifestPath: state[\run][\manifestPath],
+            recipePath: state[\run][\recipePath]
         ));
+    };
+};
+
+~settleGenerationJob = { |state, jobIndex, succeeded, data|
+    var job, message;
+    if(state[\settled].includes(jobIndex).not) {
+        state[\settled].add(jobIndex);
+        state[\active] = (state[\active] - 1).max(0);
+        state[\processed] = state[\processed] + 1;
+        job = state[\jobs][jobIndex];
+
+        if(succeeded) {
+            state[\completed] = state[\completed] + 1;
+            try {
+                ~writeManifestEntry.(
+                    job,
+                    data[\outputPath],
+                    data[\validation],
+                    data[\finalParameters],
+                    state[\run]
+                );
+            } { |error|
+                state[\failures].add((
+                    job: job,
+                    error: "Manifest write failed: " ++ error.errorString
+                ));
+                ("Manifest write failed for " ++ job[\filename]
+                    ++ ": " ++ error.errorString).warn;
+            };
+            ~notifyGeneration.(\rendered, (
+                job: job,
+                outputPath: data[\outputPath],
+                validation: data[\validation],
+                effectiveParameters: data[\finalParameters],
+                completed: state[\completed],
+                processed: state[\processed],
+                total: state[\jobs].size
+            ));
+            ("Progress: " ++ state[\processed]
+                ++ "/" ++ state[\jobs].size).postln;
+        } {
+            message = data[\message] ? "Unknown render failure";
+            state[\failures].add((job: job, error: message));
+            try {
+                ~writeManifestFailure.(job, message, state[\run]);
+            } { |error|
+                ("Could not record render failure: " ++ error.errorString).warn;
+            };
+            ~notifyGeneration.(\failed, (
+                job: job,
+                message: message,
+                completed: state[\completed],
+                processed: state[\processed],
+                total: state[\jobs].size
+            ));
+            ("Render failed: " ++ job[\filename] ++ " - " ++ message).warn;
+        };
+        ~pumpJobQueue.();
     };
 };
 
 ~pumpJobQueue = {
     var maximumWorkers, state;
     state = ~generationState;
-    maximumWorkers = ~runtimeConfig[\maxConcurrentRenders].asInteger.clip(1, 8);
+    maximumWorkers = state[\run][\config][\maxConcurrentRenders]
+        .asInteger.clip(1, 8);
 
     while({
         state[\cancelled].not
         and: { state[\active] < maximumWorkers }
         and: { state[\nextIndex] < state[\jobs].size }
     }, {
-        var job;
+        var job, jobIndex;
+        jobIndex = state[\nextIndex];
         job = state[\jobs][state[\nextIndex]];
         state[\nextIndex] = state[\nextIndex] + 1;
         state[\active] = state[\active] + 1;
@@ -652,62 +831,49 @@
             job[\filename],
             job[\duration],
             { |outputPath, validation, finalParameters|
-                state[\active] = state[\active] - 1;
-                state[\completed] = state[\completed] + 1;
-                ~writeManifestEntry.(
-                    job, outputPath, validation, finalParameters
-                );
-                ~notifyGeneration.(\rendered, (
-                    job: job,
+                ~settleGenerationJob.(state, jobIndex, true, (
                     outputPath: outputPath,
                     validation: validation,
-                    effectiveParameters: finalParameters,
-                    completed: state[\completed],
-                    total: state[\jobs].size
+                    finalParameters: finalParameters
                 ));
-                (
-                    "Progress: " ++ state[\completed]
-                    ++ "/" ++ state[\jobs].size
-                ).postln;
-                ~pumpJobQueue.();
             },
             { |message|
-                state[\active] = state[\active] - 1;
-                state[\failures].add((job: job, error: message));
-                ~writeManifestFailure.(job, message);
-                ~notifyGeneration.(\failed, (
-                    job: job,
-                    message: message,
-                    completed: state[\completed],
-                    total: state[\jobs].size
-                ));
-                ("Render failed: " ++ job[\filename] ++ " - " ++ message).warn;
-                ~pumpJobQueue.();
-            }
+                ~settleGenerationJob.(state, jobIndex, false, (message: message));
+            },
+            state[\run]
         );
     });
 
     ~finishGenerationIfReady.();
 };
 
-~launchJobs = { |jobs|
-    ~prepareRun.(jobs);
+~launchJobs = { |jobs, context|
+    var run;
+    ~validateRenderJobs.(jobs);
+    run = ~prepareRun.(jobs, context);
     ~generationState = (
-        jobs: jobs,
+        jobs: jobs.deepCopy,
+        run: run,
         nextIndex: 0,
         active: 0,
+        processed: 0,
         completed: 0,
         failures: List.new,
-        cancelled: false
+        cancelled: false,
+        settled: Set.new
     );
+    // Compatibility globals are snapshots; active services read run[\config].
+    ~runtimeConfig = run[\config].deepCopy;
+    ~activeProfile = run[\profileName];
+    ~activeProfileDefinition = run[\profileDefinition];
     ~generationRunning = true;
     ~notifyGeneration.(\started, (
         total: jobs.size,
-        outputDirectory: ~currentRunDirectory,
-        profile: ~activeProfile
+        outputDirectory: run[\directory],
+        profile: run[\profileName]
     ));
     ("Starting " ++ jobs.size ++ " renders with up to "
-        ++ ~runtimeConfig[\maxConcurrentRenders]
+        ++ run[\config][\maxConcurrentRenders]
         ++ " workers...").postln;
     ~pumpJobQueue.();
 };
@@ -717,7 +883,9 @@
         "A generation job is already running.".warn;
     } {
         try {
-            ~launchJobs.(~planJobs.(engineNames, options));
+            var bundle;
+            bundle = ~planJobBundle.(engineNames, options);
+            ~launchJobs.(bundle[\jobs], bundle[\context]);
         } { |error|
             ~generationRunning = false;
             error.reportError;
@@ -726,23 +894,16 @@
 };
 
 ~startJobs = { |jobs, options|
-    var profileName;
+    var context, profileName;
     if(~generationRunning == true) {
         "A generation job is already running.".warn;
     } {
         try {
-            if(jobs.isArray.not or: { jobs.isEmpty }) {
-                Error("Custom jobs must be a non-empty Array.").throw;
-            };
             profileName = if(options.notNil) { options[\activeProfile] };
             profileName = profileName ? ~config[\activeProfile];
-            ~activateProfile.(profileName, options);
-            jobs.do { |job|
-                if(~drumDefs[job[\engine]].isNil) {
-                    Error("Unknown custom-job engine: " ++ job[\engine]).throw;
-                };
-            };
-            ~launchJobs.(jobs.deepCopy);
+            context = ~resolveProfileContext.(profileName, options);
+            ~validateRenderJobs.(jobs);
+            ~launchJobs.(jobs.deepCopy, context);
         } { |error|
             ~generationRunning = false;
             error.reportError;
@@ -773,7 +934,7 @@
     if(path.isNil or: { File.exists(path).not }) {
         Error("Recipe file was not found: " ++ path).throw;
     };
-    recipe = path.load;
+    recipe = ~readDrumLabDataFile.(path);
     if(recipe.isKindOf(Dictionary).not) {
         Error("Recipe did not contain a configuration Event.").throw;
     };

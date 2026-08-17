@@ -16,4 +16,8 @@ else
     exit 1
 fi
 
+if [ -n "${SCLANG_ARCH:-}" ]; then
+    exec arch "-$SCLANG_ARCH" "$sc_binary" "$project_dir/$test_file"
+fi
+
 exec "$sc_binary" "$project_dir/$test_file"
