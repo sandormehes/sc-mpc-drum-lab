@@ -20,14 +20,19 @@
     result;
 };
 
-~createRunDirectory = {
+~createRunDirectory = { |context|
     var baseName, candidate, counter, outputRoot;
-    outputRoot = ~runtimeConfig[\outputDirectory];
+    context = context ? (
+        config: ~runtimeConfig,
+        profileName: ~activeProfile,
+        profileDefinition: ~activeProfileDefinition
+    );
+    outputRoot = context[\config][\outputDirectory];
     File.mkdir(outputRoot);
 
-    if(~runtimeConfig[\useRunDirectories]) {
+    if(context[\config][\useRunDirectories]) {
         baseName = Date.getDate.asSortableString
-            ++ "_" ++ ~activeProfile.asString;
+            ++ "_" ++ context[\profileName].asString;
         candidate = outputRoot +/+ baseName;
         counter = 2;
         while({ File.exists(candidate) }, {
@@ -45,11 +50,25 @@
     candidate;
 };
 
-~prepareRun = { |jobs|
-    var counts, families, file, git, options, recipe, recipeFile;
-    ~currentRunDirectory = ~createRunDirectory.();
-    ~manifestPath = ~currentRunDirectory +/+ "sample_manifest.txt";
-    ~recipePath = ~currentRunDirectory +/+ "recipe.scd";
+~prepareRun = { |jobs, context|
+    var config, counts, families, file, git, options, recipe, recipeFile, run;
+    context = context ? (
+        config: ~runtimeConfig,
+        profileName: ~activeProfile,
+        profileDefinition: ~activeProfileDefinition
+    );
+    config = context[\config];
+    run = (
+        config: config.deepCopy,
+        profileName: context[\profileName],
+        profileDefinition: context[\profileDefinition],
+        directory: ~createRunDirectory.(context)
+    );
+    run[\manifestPath] = run[\directory] +/+ "sample_manifest.txt";
+    run[\recipePath] = run[\directory] +/+ "recipe.json";
+    ~currentRunDirectory = run[\directory];
+    ~manifestPath = run[\manifestPath];
+    ~recipePath = run[\recipePath];
     git = ~gitMetadata.();
     families = List.new;
     jobs.do { |job|
@@ -62,28 +81,28 @@
         counts[family] = jobs.count { |job| job[\family] == family };
     };
 
-    file = File(~manifestPath, "w");
+    file = File(run[\manifestPath], "w");
     if(file.isOpen.not) {
-        Error("Cannot write manifest: " ++ ~manifestPath).throw;
+        Error("Cannot write manifest: " ++ run[\manifestPath]).throw;
     };
 
     protect {
         file.write("SC MPC DRUM LAB MANIFEST v3\n");
         file.write("Generated: " ++ Date.getDate.asString ++ "\n");
         file.write("Project version: "
-            ++ ~runtimeConfig[\projectVersion] ++ "\n");
+            ++ config[\projectVersion] ++ "\n");
         file.write("SuperCollider: " ++ Main.version ++ "\n");
         file.write("Git revision: " ++ git[\revision] ++ "\n");
         file.write("Git dirty: " ++ git[\dirty] ++ "\n");
-        file.write("Profile: " ++ ~activeProfile ++ "\n");
-        file.write("Seed: " ++ ~runtimeConfig[\randomSeed] ++ "\n");
+        file.write("Profile: " ++ run[\profileName] ++ "\n");
+        file.write("Seed: " ++ config[\randomSeed] ++ "\n");
         file.write("Planned samples: " ++ jobs.size ++ "\n");
-        file.write("Sample rate: " ++ ~runtimeConfig[\sampleRate] ++ "\n");
-        file.write("Header format: " ++ ~runtimeConfig[\headerFormat] ++ "\n");
-        file.write("Sample format: " ++ ~runtimeConfig[\sampleFormat] ++ "\n");
-        file.write("Master amp: " ++ ~runtimeConfig[\masterAmp] ++ "\n\n");
+        file.write("Sample rate: " ++ config[\sampleRate] ++ "\n");
+        file.write("Header format: " ++ config[\headerFormat] ++ "\n");
+        file.write("Sample format: " ++ config[\sampleFormat] ++ "\n");
+        file.write("Master amp: " ++ config[\masterAmp] ++ "\n\n");
         file.write("Musical macros: "
-            ++ ~runtimeConfig[\macros].asCompileString ++ "\n");
+            ++ config[\macros].asCompileString ++ "\n");
         file.write("Enabled families: "
             ++ families.asArray.asCompileString ++ "\n");
         file.write("Family counts: "
@@ -93,22 +112,22 @@
     };
 
     options = (
-        activeProfile: ~activeProfile,
-        randomSeed: ~runtimeConfig[\randomSeed],
-        samplesPerEngine: ~runtimeConfig[\samplesPerEngine],
+        activeProfile: run[\profileName],
+        randomSeed: config[\randomSeed],
+        samplesPerEngine: config[\samplesPerEngine],
         engineCounts: counts,
         enabledEngines: families.asArray,
-        macros: ~runtimeConfig[\macros],
-        masterAmp: ~runtimeConfig[\masterAmp],
-        maxConcurrentRenders: ~runtimeConfig[\maxConcurrentRenders]
+        macros: config[\macros],
+        masterAmp: config[\masterAmp],
+        maxConcurrentRenders: config[\maxConcurrentRenders]
     );
     recipe = if(families.includes(\preset)) {
         (
             kind: \sound,
             sound: jobs.first.copy,
             options: (
-                activeProfile: ~activeProfile,
-                masterAmp: ~runtimeConfig[\masterAmp]
+                activeProfile: run[\profileName],
+                masterAmp: config[\masterAmp]
             )
         )
     } {
@@ -125,23 +144,24 @@
             )
         }
     };
-    recipeFile = File(~recipePath, "w");
+    recipeFile = File(run[\recipePath], "w");
     if(recipeFile.isOpen.not) {
-        Error("Cannot write recipe: " ++ ~recipePath).throw;
+        Error("Cannot write recipe: " ++ run[\recipePath]).throw;
     };
     protect {
-        recipeFile.write(recipe.asCompileString ++ "\n");
+        recipeFile.write(~encodeDrumLabJson.(recipe) ++ "\n");
     } {
         recipeFile.close;
     };
-    ~currentRunDirectory;
+    run;
 };
 
-~appendManifestLine = { |line|
+~appendManifestLine = { |line, run|
     var file;
-    file = File(~manifestPath, "a");
+    run = run ? ~generationState.tryPerform(\at, \run);
+    file = File(if(run.notNil) { run[\manifestPath] } { ~manifestPath }, "a");
     if(file.isOpen.not) {
-        Error("Cannot append manifest: " ++ ~manifestPath).throw;
+        Error("Cannot append manifest.").throw;
     };
     protect {
         file.write(line ++ "\n");
@@ -150,7 +170,7 @@
     };
 };
 
-~writeManifestEntry = { |job, outputPath, validation, finalParameters|
+~writeManifestEntry = { |job, outputPath, validation, finalParameters, run|
     var entry;
     entry = (
         status: \complete,
@@ -167,27 +187,27 @@
         validation: validation,
         outputPath: outputPath
     );
-    ~appendManifestLine.(entry.asCompileString);
+    ~appendManifestLine.(entry.asCompileString, run);
 };
 
-~writeManifestFailure = { |job, message|
+~writeManifestFailure = { |job, message, run|
     ~appendManifestLine.((
         status: \failed,
         filename: job[\filename],
         family: job[\family],
         synth: job[\engine],
         error: message
-    ).asCompileString);
+    ).asCompileString, run);
 };
 
-~finalizeManifest = { |state|
-    ~appendManifestLine.("");
+~finalizeManifest = { |state, run|
+    ~appendManifestLine.("", run);
     ~appendManifestLine.((
         summary: (
             completed: state[\completed],
             failed: state[\failures].size,
             cancelled: state[\cancelled]
         )
-    ).asCompileString);
+    ).asCompileString, run);
 };
 )

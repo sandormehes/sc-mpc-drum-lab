@@ -7,8 +7,9 @@
     };
 };
 
-~validateRenderedFile = { |path, expectedDuration|
+~validateRenderedFile = { |path, expectedDuration, runtimeConfig|
     var errors, file, result;
+    runtimeConfig = runtimeConfig ? ~runtimeConfig;
     errors = List.new;
     file = SoundFile.openRead(path);
 
@@ -26,7 +27,7 @@
             dcOffset = samples.mean;
             rms = samples.mean { |sample| sample.squared }.sqrt;
             tailFrames = (
-                ~runtimeConfig[\tailDuration] * file.sampleRate
+                runtimeConfig[\tailDuration] * file.sampleRate
             ).asInteger.clip(1, file.numFrames);
             tailPeak = file.channelPeaks(
                 file.numFrames - tailFrames, tailFrames
@@ -35,36 +36,36 @@
             if(file.numChannels != 1) {
                 errors.add("Expected mono audio, found " ++ file.numChannels ++ " channels");
             };
-            if(file.sampleRate != ~runtimeConfig[\sampleRate]) {
+            if(file.sampleRate != runtimeConfig[\sampleRate]) {
                 errors.add(
-                    "Expected " ++ ~runtimeConfig[\sampleRate]
+                    "Expected " ++ runtimeConfig[\sampleRate]
                     ++ " Hz, found " ++ file.sampleRate
                 );
             };
             if(file.sampleFormat.asString.toLower
-                != ~runtimeConfig[\sampleFormat].asString.toLower) {
+                != runtimeConfig[\sampleFormat].asString.toLower) {
                 errors.add(
-                    "Expected " ++ ~runtimeConfig[\sampleFormat]
+                    "Expected " ++ runtimeConfig[\sampleFormat]
                     ++ ", found " ++ file.sampleFormat
                 );
             };
             if((duration - expectedDuration).abs
-                > ~runtimeConfig[\durationTolerance]) {
+                > runtimeConfig[\durationTolerance]) {
                 errors.add(
                     "Expected duration " ++ expectedDuration
                     ++ ", found " ++ duration.round(0.0001)
                 );
             };
-            if(peak < ~runtimeConfig[\minimumPeak]) {
+            if(peak < runtimeConfig[\minimumPeak]) {
                 errors.add("Rendered file is silent or nearly silent");
             };
-            if(peak > ~runtimeConfig[\maximumPeak]) {
+            if(peak > runtimeConfig[\maximumPeak]) {
                 errors.add("Rendered file exceeds the configured peak limit");
             };
-            if(dcOffset.abs > ~runtimeConfig[\maximumDcOffset]) {
+            if(dcOffset.abs > runtimeConfig[\maximumDcOffset]) {
                 errors.add("Rendered file has excessive DC offset");
             };
-            if(tailPeak > ~runtimeConfig[\maximumTailPeak]) {
+            if(tailPeak > runtimeConfig[\maximumTailPeak]) {
                 errors.add("Rendered file has not decayed before its end");
             };
 
@@ -90,31 +91,36 @@
 };
 
 ~renderSample = {
-    |engine, parameters, filename, duration = 1.5, onComplete, onError|
+    |engine, parameters, filename, duration = 1.5, onComplete, onError, run|
 
-    var finalParameters, options, oscPath, outputPath;
+    var finalParameters, options, oscPath, outputPath, runtimeConfig;
     var score, synthDef, temporaryPath;
 
     synthDef = ~drumDefs[engine];
     if(synthDef.isNil) {
         Error("Unknown engine: " ++ engine).throw;
     };
-    if(~currentRunDirectory.isNil) {
+    run = run ? ~generationState.tryPerform(\at, \run);
+    runtimeConfig = if(run.notNil) { run[\config] } { ~runtimeConfig };
+    if(run.isNil and: { ~currentRunDirectory.notNil }) {
+        run = (directory: ~currentRunDirectory, config: runtimeConfig);
+    };
+    if(run.isNil or: { run[\directory].isNil }) {
         Error("No output run is prepared. Use ~start.() or ~renderPreset.().").throw;
     };
 
-    outputPath = ~currentRunDirectory +/+ filename;
-    temporaryPath = ~currentRunDirectory +/+ ("." ++ filename ++ ".partial.wav");
-    oscPath = ~currentRunDirectory +/+ ("." ++ filename ++ ".osc");
+    outputPath = run[\directory] +/+ filename;
+    temporaryPath = run[\directory] +/+ ("." ++ filename ++ ".partial.wav");
+    oscPath = run[\directory] +/+ ("." ++ filename ++ ".osc");
 
     finalParameters = parameters.copy;
     finalParameters[\amp] = (finalParameters[\amp] ? 0.7)
-        * ~runtimeConfig[\masterAmp];
+        * runtimeConfig[\masterAmp];
 
     options = ServerOptions.new;
     options.numOutputBusChannels = 1;
     options.numInputBusChannels = 0;
-    options.sampleRate = ~runtimeConfig[\sampleRate];
+    options.sampleRate = runtimeConfig[\sampleRate];
     options.blockSize = 64;
     options.memSize = 8192 * 16;
 
@@ -132,22 +138,24 @@
         score.recordNRT(
             oscFilePath: oscPath,
             outputFilePath: temporaryPath,
-            sampleRate: ~runtimeConfig[\sampleRate],
-            headerFormat: ~runtimeConfig[\headerFormat],
-            sampleFormat: ~runtimeConfig[\sampleFormat],
+            sampleRate: runtimeConfig[\sampleRate],
+            headerFormat: runtimeConfig[\headerFormat],
+            sampleFormat: runtimeConfig[\sampleFormat],
             options: options,
             duration: duration,
             action: { |exitCode|
                 {
+                    var renderError, validation;
                     try {
-                        var validation;
                         ~removeFileIfExists.(oscPath);
 
                         if(exitCode != 0) {
                             Error("scsynth exited with status " ++ exitCode).throw;
                         };
 
-                        validation = ~validateRenderedFile.(temporaryPath, duration);
+                        validation = ~validateRenderedFile.(
+                            temporaryPath, duration, runtimeConfig
+                        );
                         if(validation[\valid].not) {
                             Error(validation[\error]).throw;
                         };
@@ -160,18 +168,23 @@
                         ~removeFileIfExists.(temporaryPath);
                         ("Finished:  " ++ filename).postln;
 
-                        if(onComplete.notNil) {
-                            onComplete.value(
-                                outputPath, validation, finalParameters
-                            );
-                        };
                     } { |error|
                         ~removeFileIfExists.(oscPath);
                         ~removeFileIfExists.(temporaryPath);
+                        renderError = error;
+                    };
+
+                    // Consumer callback failures are not render failures. The
+                    // scheduler owns callback error handling and settlement.
+                    if(renderError.notNil) {
                         if(onError.notNil) {
-                            onError.value(error.errorString);
+                            onError.value(renderError.errorString);
                         } {
-                            error.reportError;
+                            renderError.reportError;
+                        };
+                    } {
+                        if(onComplete.notNil) {
+                            onComplete.value(outputPath, validation, finalParameters);
                         };
                     };
                 }.defer;

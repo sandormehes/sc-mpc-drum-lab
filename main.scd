@@ -29,6 +29,7 @@ loadProject = { |projectDirectory|
     (projectDirectory +/+ "synthdefs/glitch.scd").load;
     (projectDirectory +/+ "synthdefs/resonator.scd").load;
     (projectDirectory +/+ "synthdefs/club_perc.scd").load;
+    (projectDirectory +/+ "synthdefs/thick_club.scd").load;
 
     // Rendering and generation system.
     (projectDirectory +/+ "lib/renderer.scd").load;
@@ -43,6 +44,7 @@ loadProject = { |projectDirectory|
 
     ~activateProfile.(~config[\activeProfile]);
     (projectDirectory +/+ "lib/session.scd").load;
+    (projectDirectory +/+ "lib/favorites.scd").load;
     (projectDirectory +/+ "lib/gui.scd").load;
 
     "".postln;

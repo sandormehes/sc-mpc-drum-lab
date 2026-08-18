@@ -2,7 +2,7 @@
 // concurrency, and manifests.
 
 (
-var projectRoot;
+var projectRoot, testOutputRoot;
 
 try {
     projectRoot = File.realpath(
@@ -10,10 +10,17 @@ try {
     );
     (projectRoot +/+ "main.scd").load;
 
+    testOutputRoot = PathName.tmp +/+ ("sc-mpc-drum-lab-render-test-"
+        ++ Date.getDate.asSortableString);
+    if(File.exists(testOutputRoot)) { File.deleteAll(testOutputRoot) };
+    File.mkdir(testOutputRoot);
+    ~config[\outputDirectory] = testOutputRoot;
     ~config[\activeProfile] = \thickClub;
     ~config[\samplesPerEngine] = 1;
     ~config[\maxConcurrentRenders] = 2;
     ~start.([\gqomTom, \dancehallRim, \grimeHat, \dancehallShaker]);
+    // Active validation must use the run snapshot, not compatibility globals.
+    ~runtimeConfig[\maximumTailPeak] = -1;
 
     Routine({
         var exportDirectory, favoriteRebuildDirectory, favoriteRecipe;
@@ -23,7 +30,7 @@ try {
         var variationRecipePath;
         while({ ~generationRunning == true }, { 0.1.wait });
 
-        recipe = ~recipePath.load;
+        recipe = ~readDrumLabDataFile.(~recipePath);
         replayJobs = ~planJobs.(nil, recipe[\options]);
         firstFavorite = (
             job: ~generationState[\jobs][0],
@@ -45,7 +52,9 @@ try {
             * ~runtimeConfig[\masterAmp];
         favorites = [firstFavorite, secondFavorite];
         exportDirectory = ~exportDrumLabFavorites.(favorites);
-        favoriteRecipe = (exportDirectory +/+ "favorites_recipe.scd").load;
+        favoriteRecipe = ~readDrumLabDataFile.(
+            exportDirectory +/+ "favorites_recipe.json"
+        );
 
         passed = ~generationState.notNil
             and: { ~generationState[\failures].isEmpty }
@@ -74,7 +83,7 @@ try {
                 File.exists(exportDirectory +/+ "favorites_manifest.txt")
             }
             and: {
-                File.exists(exportDirectory +/+ "favorites_recipe.scd")
+                File.exists(exportDirectory +/+ "favorites_recipe.json")
             }
             and: { favoriteRecipe[\recipeRole] == \favoriteKit }
             and: { favoriteRecipe[\jobs].size == 2 }
@@ -118,7 +127,7 @@ try {
             ~startJobs.([variationJob], variationOptions);
             while({ ~generationRunning == true }, { 0.1.wait });
             variationRecipePath = ~recipePath;
-            variationRecipe = ~recipePath.load;
+            variationRecipe = ~readDrumLabDataFile.(~recipePath);
             passed = ~generationState[\failures].isEmpty
                 and: { ~generationState[\completed] == 1 }
                 and: { variationRecipe[\kind] == \jobs }
@@ -153,17 +162,22 @@ try {
 
         if(passed) {
             "SC MPC Drum Lab render smoke test passed.".postln;
+            File.deleteAll(testOutputRoot);
             0.exit;
         } {
             "SC MPC Drum Lab render smoke test failed.".error;
             if(~generationState.notNil) {
                 ~generationState[\failures].postln;
             };
+            File.deleteAll(testOutputRoot);
             1.exit;
         };
     }).play(AppClock);
 } { |error|
     error.reportError;
+    if(testOutputRoot.notNil and: { File.exists(testOutputRoot) }) {
+        File.deleteAll(testOutputRoot);
+    };
     1.exit;
 };
 )

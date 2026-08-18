@@ -62,7 +62,7 @@
 
 ~renderSound = {
     |sound, filename, options|
-    var job, outputName;
+    var job, outputName, profileName, runtimeOptions;
     if(~generationRunning == true) {
         "A generation job is already running.".warn;
     } {
@@ -73,51 +73,18 @@
                 Error("Preset filename must not contain a directory path.").throw;
             };
 
-            ~activateProfile.(
-                if(options.notNil) {
-                    options[\activeProfile] ? ~config[\activeProfile]
-                } {
-                    ~config[\activeProfile]
-                },
-                options
-            );
+            profileName = if(options.notNil) { options[\activeProfile] };
+            profileName = profileName ? ~config[\activeProfile];
+            runtimeOptions = (options ? ()).deepCopy;
+            runtimeOptions[\activeProfile] = profileName;
             job = (
                 family: \preset,
                 engine: sound[\engine],
-                parameters: sound[\parameters],
+                parameters: sound[\parameters].deepCopy,
                 filename: outputName,
                 duration: sound[\duration]
             );
-            ~prepareRun.([job]);
-            ~generationRunning = true;
-
-            ~renderSample.(
-            job[\engine], job[\parameters], job[\filename], job[\duration],
-            { |outputPath, validation, finalParameters|
-                var state;
-                state = (
-                    completed: 1, failures: List.new, cancelled: false
-                );
-                ~writeManifestEntry.(
-                    job, outputPath, validation, finalParameters
-                );
-                ~finalizeManifest.(state);
-                ~generationRunning = false;
-                ("Preset written to: " ++ outputPath).postln;
-            },
-            { |message|
-                var failures, state;
-                failures = List.new;
-                failures.add((job: job, error: message));
-                state = (
-                    completed: 0, failures: failures, cancelled: false
-                );
-                ~writeManifestFailure.(job, message);
-                ~finalizeManifest.(state);
-                ~generationRunning = false;
-                ("Preset render failed: " ++ message).warn;
-            }
-            );
+            ~startJobs.([job], runtimeOptions);
         } { |error|
             ~generationRunning = false;
             error.reportError;
