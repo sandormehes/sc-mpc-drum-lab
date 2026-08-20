@@ -312,7 +312,9 @@ If SuperCollider is installed somewhere unusual:
 SCLANG_BIN=/full/path/to/sclang ./scripts/test.sh
 ```
 
-On a universal macOS installation, an architecture can also be selected
+On Apple Silicon, the test launcher checks whether the native `sclang` process
+can start and automatically uses the universal binary's x86_64 slice when the
+arm64 Qt runtime is incompatible. An architecture can still be selected
 explicitly, for example `SCLANG_ARCH=x86_64 ./scripts/test.sh`.
 
 GitHub Actions runs the same smoke test on pushes and pull requests. Full audio
