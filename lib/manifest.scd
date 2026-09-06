@@ -129,6 +129,7 @@
     recipe = if(families.includes(\preset)) {
         (
             kind: \sound,
+            schemaVersion: ~drumLabRecipeSchemaVersion,
             sound: jobs.first.copy,
             options: (
                 activeProfile: run[\profileName],
@@ -139,12 +140,14 @@
         if(jobs.any { |job| job[\custom] == true }) {
             (
                 kind: \jobs,
+                schemaVersion: ~drumLabRecipeSchemaVersion,
                 jobs: jobs.deepCopy,
                 options: options
             )
         } {
             (
                 kind: \pack,
+                schemaVersion: ~drumLabRecipeSchemaVersion,
                 options: options
             )
         }

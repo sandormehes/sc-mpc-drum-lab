@@ -73,6 +73,7 @@ try {
                 File.exists(~currentRunDirectory +/+ "DHSHAKE_001.wav")
             }
             and: { recipe[\kind] == \pack }
+            and: { recipe[\schemaVersion] == ~drumLabRecipeSchemaVersion }
             and: { recipe[\options][\kitBalanceMode] == \rms }
             and: { manifestText.contains("kitBalance") }
             and: { replayJobs.size == 4 }

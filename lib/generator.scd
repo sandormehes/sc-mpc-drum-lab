@@ -704,6 +704,8 @@
     "  ~openDrumLab.()                 Open the control panel".postln;
     "  ~openFavoriteKitBuilder.(~drumLabFavorites)  Arrange the 16-pad kit".postln;
     "  ~listProfiles.()                List available profiles".postln;
+    "  ~listKitTemplates.()            List curated 16-pad kit templates".postln;
+    "  ~startKitTemplate.(\\gqom16)     Generate a curated 16-pad kit".postln;
     "  ~listFamilies.()                List families in the active profile".postln;
     "  ~dryRun.()                      Summarize the next pack".postln;
     "  ~start.()                       Generate the configured pack".postln;
@@ -1016,10 +1018,7 @@
     if(path.isNil or: { File.exists(path).not }) {
         Error("Recipe file was not found: " ++ path).throw;
     };
-    recipe = ~readDrumLabDataFile.(path);
-    if(recipe.isKindOf(Dictionary).not) {
-        Error("Recipe did not contain a configuration Event.").throw;
-    };
+    recipe = ~loadDrumLabRecipe.(path);
     switch(recipe[\kind],
         \pack, { ~start.(nil, recipe[\options]) },
         \sound, {

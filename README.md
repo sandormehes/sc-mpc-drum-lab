@@ -63,7 +63,7 @@ Select **Explore** beside any sound family to open the v0.4 candidate browser:
 
 Rejecting a candidate never deletes its source run. A close variation records
 its source filename, mutation distance, lock choices, complete parameters, and
-synthesis seed. Its `recipe.json` therefore replays the exact custom job rather
+synthesis seed. Its schema-versioned `recipe.json` therefore replays the exact custom job rather
 than generating an approximation.
 
 ### Sessions and reopening work
@@ -125,6 +125,20 @@ Generate one family only:
 ```supercollider
 ~generateEngine.(\dancehallKick);
 ```
+
+Start from a deliberately balanced 16-pad foundation instead of a larger
+general-purpose pack:
+
+```supercollider
+~listKitTemplates.();
+~dryRunKitTemplate.(\gqom16);
+~startKitTemplate.(\dancehall16);
+```
+
+The built-in `\dancehall16`, `\grime16`, and `\gqom16` templates use an
+intentional pad order and exactly sixteen generated sounds. Supply normal
+generation overrides when needed, for example
+`~startKitTemplate.(\grime16, (randomSeed: 42, macros: (dirt: 0.7)))`.
 
 Stop scheduling new jobs while allowing active renders to finish:
 
@@ -359,6 +373,7 @@ sc-mpc-drum-lab/
 │   ├── renderer.scd
 │   ├── manifest.scd
 │   ├── generator.scd
+│   ├── templates.scd
 │   ├── session.scd
 │   ├── favorites.scd
 │   └── gui.scd

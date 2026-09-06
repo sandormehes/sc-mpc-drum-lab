@@ -43,6 +43,7 @@ loadProject = { |projectDirectory|
     profilePaths.do { |profilePath| profilePath.load };
 
     ~activateProfile.(~config[\activeProfile]);
+    (projectDirectory +/+ "lib/templates.scd").load;
     (projectDirectory +/+ "lib/session.scd").load;
     (projectDirectory +/+ "lib/favorites.scd").load;
     (projectDirectory +/+ "lib/gui.scd").load;
