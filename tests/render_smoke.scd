@@ -2,7 +2,7 @@
 // concurrency, and manifests.
 
 (
-var projectRoot, testOutputRoot;
+var manifestText, projectRoot, testOutputRoot;
 
 try {
     projectRoot = File.realpath(
@@ -30,6 +30,7 @@ try {
         var variationRecipePath;
         while({ ~generationRunning == true }, { 0.1.wait });
 
+        manifestText = File.readAllString(~manifestPath);
         recipe = ~readDrumLabDataFile.(~recipePath);
         replayJobs = ~planJobs.(nil, recipe[\options]);
         firstFavorite = (
@@ -72,6 +73,8 @@ try {
                 File.exists(~currentRunDirectory +/+ "DHSHAKE_001.wav")
             }
             and: { recipe[\kind] == \pack }
+            and: { recipe[\options][\kitBalanceMode] == \rms }
+            and: { manifestText.contains("kitBalance") }
             and: { replayJobs.size == 4 }
             and: {
                 File.exists(exportDirectory +/+ "A01_GQTOM.WAV")

@@ -42,6 +42,13 @@ Five musical controls provide consistent direction across sound families:
 
 Their center positions preserve the profile's original parameter ranges.
 
+Completed packs receive a conservative kit-level balance by default. The pass
+matches RMS while preserving a 0.92 peak ceiling and applies at most 6 dB of
+adjustment. A small brightness-aware compensation prevents sharp hats and
+shakers from appearing louder solely because of their high-frequency content;
+it changes level only, never applies hidden EQ. Every pre/post measurement and
+gain adjustment is recorded in `sample_manifest.txt`.
+
 ### Candidate browser and close variations
 
 Select **Explore** beside any sound family to open the v0.4 candidate browser:
@@ -149,6 +156,7 @@ macros: nil,
 masterAmp: nil,
 enabledEngines: nil,
 maxConcurrentRenders: 2,
+kitBalanceMode: \rms,
 autoStart: false
 ```
 
@@ -191,6 +199,11 @@ macros: (
 Keep the same `randomSeed` to reproduce the same parameter sequence. Every
 generated sound also receives a deterministic synthesis seed, including its
 server-side noise generators.
+
+To keep the raw render levels, set `kitBalanceMode: \off`. `\peak` matches
+peaks instead; `\rms` is the recommended musical default. Advanced controls in
+`config.scd` set the RMS and peak targets, maximum adjustment, and the modest
+brightness-aware level compensation.
 
 ### Profiles
 

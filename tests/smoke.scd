@@ -254,6 +254,12 @@ try {
             thickJobs[0].copy
         ]);
     }, "job validation should reject duplicate filenames");
+    assertThrows.({
+        ~resolveProfileContext.(\thickClub, (kitBalanceMode: \invalid));
+    }, "kit balancing should reject unknown modes");
+    assertThrows.({
+        ~resolveProfileContext.(\thickClub, (kitBalanceTargetPeak: 1.1));
+    }, "kit balancing should respect the render peak ceiling");
     originalPump = ~pumpJobQueue;
     originalWriteEntry = ~writeManifestEntry;
     settlementState = (
@@ -263,6 +269,7 @@ try {
         processed: 0,
         completed: 0,
         failures: List.new,
+        renderResults: List.new,
         settled: Set.new
     );
     protect {

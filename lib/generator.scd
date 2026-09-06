@@ -207,6 +207,19 @@
     if(runtimeConfig[\outputDirectory].isKindOf(String).not) {
         Error("outputDirectory must be a path String.").throw;
     };
+    if([\off, \rms, \peak].includes(runtimeConfig[\kitBalanceMode]).not) {
+        Error("kitBalanceMode must be \\off, \\rms, or \\peak.").throw;
+    };
+    [\kitBalanceTargetRms, \kitBalanceTargetPeak,
+        \kitBalanceMaximumAdjustmentDb, \kitBalanceToneCompensationDb].do {
+        |key|
+        if(runtimeConfig[key].isNumber.not or: { runtimeConfig[key] < 0 }) {
+            Error(key ++ " must be a non-negative number.").throw;
+        };
+    };
+    if(runtimeConfig[\kitBalanceTargetPeak] > runtimeConfig[\maximumPeak]) {
+        Error("kitBalanceTargetPeak cannot exceed maximumPeak.").throw;
+    };
 
     if(runtimeConfig[\engineCounts].notNil
         and: { runtimeConfig[\engineCounts].isKindOf(Dictionary).not }) {
@@ -713,6 +726,15 @@
             or: { state[\cancelled] }
         }) {
 
+        if(state[\balanced].not) {
+            state[\balanced] = true;
+            try {
+                ~balanceDrumLabKit.(state);
+            } { |error|
+                state[\balanceFailures].add(error.errorString);
+                ("Kit balancing failed: " ++ error.errorString).warn;
+            };
+        };
         ~generationRunning = false;
         try {
             ~finalizeManifest.(state, state[\run]);
@@ -729,6 +751,9 @@
         };
         ("Completed: " ++ state[\completed]).postln;
         ("Failed:    " ++ state[\failures].size).postln;
+        if(state[\balanceFailures].notEmpty) {
+            ("Balance warnings: " ++ state[\balanceFailures].size).warn;
+        };
         ("Samples:   " ++ state[\run][\directory]).postln;
         ("Manifest:  " ++ state[\run][\manifestPath]).postln;
         ("Recipe:    " ++ state[\run][\recipePath]).postln;
@@ -741,6 +766,55 @@
             manifestPath: state[\run][\manifestPath],
             recipePath: state[\run][\recipePath]
         ));
+    };
+};
+
+~balanceDrumLabKit = { |state|
+    var config, mode, results;
+    config = state[\run][\config];
+    mode = config[\kitBalanceMode];
+    results = state[\renderResults];
+    if(mode == \off or: { results.isEmpty }) {
+        state
+    } {
+        results.do { |result|
+            var adjustmentDb, baseGain, brightnessDb, gain, maximumDb, peakGain;
+            var postValidation, target;
+            target = if(mode == \peak) {
+                config[\kitBalanceTargetPeak]
+            } {
+                config[\kitBalanceTargetRms]
+            };
+            baseGain = target
+                / (result[\validation][mode] ? 0.000001).max(0.000001);
+            brightnessDb = (0.5 - result[\validation][\brightness])
+                * 2 * config[\kitBalanceToneCompensationDb];
+            maximumDb = config[\kitBalanceMaximumAdjustmentDb];
+            adjustmentDb = (baseGain.ampdb + brightnessDb)
+                .clip(maximumDb.neg, maximumDb);
+            gain = adjustmentDb.dbamp;
+            peakGain = config[\kitBalanceTargetPeak]
+                / (result[\validation][\peak] ? 0.000001).max(0.000001);
+            gain = gain.min(peakGain);
+            ~applyDrumLabWavGain.(result[\outputPath], gain);
+            postValidation = ~validateRenderedFile.(
+                result[\outputPath], result[\job][\duration], config
+            );
+            if(postValidation[\valid].not) {
+                Error("Balanced " ++ result[\job][\filename] ++ ": "
+                    ++ postValidation[\error]).throw;
+            };
+            ~writeKitBalanceEntry.((
+                filename: result[\job][\filename],
+                mode: mode,
+                gain: gain,
+                adjustmentDb: gain.ampdb,
+                brightness: result[\validation][\brightness],
+                pre: result[\validation],
+                post: postValidation
+            ), state[\run]);
+        };
+        state;
     };
 };
 
@@ -778,6 +852,11 @@
                 completed: state[\completed],
                 processed: state[\processed],
                 total: state[\jobs].size
+            ));
+            state[\renderResults].add((
+                job: job,
+                outputPath: data[\outputPath],
+                validation: data[\validation]
             ));
             ("Progress: " ++ state[\processed]
                 ++ "/" ++ state[\jobs].size).postln;
@@ -859,6 +938,9 @@
         processed: 0,
         completed: 0,
         failures: List.new,
+        balanceFailures: List.new,
+        renderResults: List.new,
+        balanced: false,
         cancelled: false,
         settled: Set.new
     );
