@@ -55,6 +55,10 @@ try {
         thickJobs[0][\parameters][\seed].isInteger,
         "every generated sound should receive a synthesis seed"
     );
+    assert.(
+        thickJobs[0][\parameters][\seed] == 35310238,
+        "the default dancehall-kick seed should remain stable"
+    );
     repeatJobs = ~planJobs.();
     assert.(
         repeatJobs[0][\parameters][\seed]
@@ -187,6 +191,22 @@ try {
         "saved sessions should use the supported schema"
     );
     assert.(
+        ~normalizeDrumLabSession.((
+            kind: \drumLabSession,
+            options: sessionOptions,
+            favorites: []
+        ))[\schemaVersion] == 1,
+        "legacy unversioned sessions should migrate to schema v1"
+    );
+    assertThrows.({
+        ~normalizeDrumLabSession.((
+            kind: \drumLabSession,
+            schemaVersion: 99,
+            options: sessionOptions,
+            favorites: []
+        ));
+    }, "future session schemas should be rejected safely");
+    assert.(
         loadedSession[\options][\engineCounts][\dancehallKick] == 3,
         "session loading should preserve per-family counts"
     );
@@ -196,6 +216,10 @@ try {
     );
     favoriteRecipe = ~favoriteKitRecipe.(
         loadedSession[\favorites], \thickClub
+    );
+    assert.(
+        favoriteRecipe[\schemaVersion] == ~drumLabRecipeSchemaVersion,
+        "favorite recipes should carry an explicit schema version"
     );
     assert.(
         favoriteRecipe[\jobs][0][\filename] == "A01_DHKICK.WAV",
@@ -254,6 +278,26 @@ try {
             thickJobs[0].copy
         ]);
     }, "job validation should reject duplicate filenames");
+    assertThrows.({
+        ~resolveProfileContext.(\thickClub, (kitBalanceMode: \invalid));
+    }, "kit balancing should reject unknown modes");
+    assertThrows.({
+        ~resolveProfileContext.(\thickClub, (kitBalanceTargetPeak: 1.1));
+    }, "kit balancing should respect the render peak ceiling");
+    assert.(
+        ~normalizeDrumLabRecipe.((
+            kind: \pack,
+            options: (activeProfile: \thickClub)
+        ))[\schemaVersion] == 1,
+        "legacy unversioned recipes should migrate to schema v1"
+    );
+    assertThrows.({
+        ~normalizeDrumLabRecipe.((
+            kind: \pack,
+            schemaVersion: 99,
+            options: (activeProfile: \thickClub)
+        ));
+    }, "future recipe schemas should be rejected safely");
     originalPump = ~pumpJobQueue;
     originalWriteEntry = ~writeManifestEntry;
     settlementState = (
@@ -263,6 +307,7 @@ try {
         processed: 0,
         completed: 0,
         failures: List.new,
+        renderResults: List.new,
         settled: Set.new
     );
     protect {
@@ -308,6 +353,22 @@ try {
         }.size == 30,
         "half of the thickClub pack should be percussion"
     );
+    assert.(
+        ~kitTemplates.size == 3,
+        "the curated template library should expose three starter kits"
+    );
+    assert.(
+        ~planJobs.(nil, ~kitTemplateOptions.(\gqom16)).size == 16,
+        "the gqom template should plan exactly one MPC pad bank"
+    );
+    assert.(
+        ~planJobs.(nil, ~kitTemplateOptions.(\dancehall16))[0][\family]
+            == \dancehallKick,
+        "template family order should determine the exported pad order"
+    );
+    assertThrows.({
+        ~kitTemplateOptions.(\notAKit);
+    }, "unknown kit templates should be rejected safely");
 
     "SC MPC Drum Lab smoke tests passed.".postln;
     0.exit;

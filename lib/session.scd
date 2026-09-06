@@ -2,6 +2,7 @@
 
 (
 ~drumLabSessionSchemaVersion = 1;
+~drumLabRecipeSchemaVersion = 1;
 
 ~encodeDrumLabJson = { |value|
     var encode;
@@ -204,6 +205,57 @@
     };
 };
 
+// Recipes are data, not executable source. Normalize the old unversioned
+// recipe shape once at the boundary so replay code always receives a known,
+// validated format. Keep migrations explicit as the format grows.
+~normalizeDrumLabRecipe = { |recipe|
+    var normalized, profileName, version;
+    if(recipe.isKindOf(Dictionary).not) {
+        Error("Recipe did not contain a configuration Event.").throw;
+    };
+    normalized = recipe.deepCopy;
+    version = normalized[\schemaVersion];
+    if(version.isNil) {
+        // v0.7 and earlier recipes were structurally equivalent to v1 but did
+        // not label their schema. Missing newer options inherit the current
+        // safe defaults through profile-context resolution.
+        normalized[\schemaVersion] = 1;
+        version = 1;
+    };
+    if(version.isInteger.not or: { version > ~drumLabRecipeSchemaVersion }) {
+        Error("This recipe was created by a newer, unsupported version.").throw;
+    };
+    if(version < 1) {
+        Error("This recipe uses an unsupported schema version.").throw;
+    };
+    if([\pack, \sound, \jobs].includes(normalized[\kind]).not) {
+        Error("Recipe has an unsupported kind: " ++ normalized[\kind]).throw;
+    };
+    if(normalized[\options].isKindOf(Dictionary).not) {
+        Error("Recipe options must be an Event or Dictionary.").throw;
+    };
+    profileName = normalized[\options][\activeProfile]
+        ? ~config[\activeProfile];
+    ~resolveProfileContext.(profileName, normalized[\options]);
+    switch(normalized[\kind],
+        \pack, { },
+        \sound, {
+            if(normalized[\sound].isKindOf(Dictionary).not) {
+                Error("Sound recipe is missing its render job.").throw;
+            };
+            ~validateRenderJobs.([normalized[\sound]]);
+        },
+        \jobs, {
+            ~validateRenderJobs.(normalized[\jobs]);
+        }
+    );
+    normalized;
+};
+
+~loadDrumLabRecipe = { |path|
+    ~normalizeDrumLabRecipe.(~readDrumLabDataFile.(path));
+};
+
 ~drumLabSessionPath = { |path|
     var lowerPath;
     lowerPath = path.toLower;
@@ -222,27 +274,40 @@
     session;
 };
 
+~normalizeDrumLabSession = { |session|
+    var favorites, normalized, version;
+    if(session.isKindOf(Dictionary).not
+        or: { session[\kind] != \drumLabSession }) {
+        Error("Data does not describe a Drum Lab session.").throw;
+    };
+    normalized = session.deepCopy;
+    version = normalized[\schemaVersion];
+    if(version.isNil) {
+        // Pre-schema sessions already used the same options/favorites layout.
+        normalized[\schemaVersion] = 1;
+        version = 1;
+    };
+    if(version.isInteger.not
+        or: { version > ~drumLabSessionSchemaVersion }) {
+        Error("This session was created by a newer, unsupported version.").throw;
+    };
+    if(version < 1) {
+        Error("This session uses an unsupported schema version.").throw;
+    };
+    ~validateDrumLabSessionOptions.(normalized[\options]);
+    favorites = ~validateDrumLabFavorites.(normalized[\favorites]);
+    normalized[\favorites] = List.new;
+    favorites.do { |favorite|
+        normalized[\favorites].add(favorite.deepCopy);
+    };
+    normalized;
+};
+
 ~loadDrumLabSession = { |path|
-    var favorites, session;
     if(path.isNil or: { File.exists(path).not }) {
         Error("Session file was not found: " ++ path).throw;
     };
-    session = ~readDrumLabDataFile.(path);
-    if(session.isKindOf(Dictionary).not
-        or: { session[\kind] != \drumLabSession }) {
-        Error("The selected file is not a Drum Lab session.").throw;
-    };
-    if(session[\schemaVersion].isInteger.not
-        or: { session[\schemaVersion] > ~drumLabSessionSchemaVersion }) {
-        Error("This session was created by a newer, unsupported version.").throw;
-    };
-    ~validateDrumLabSessionOptions.(session[\options]);
-    favorites = ~validateDrumLabFavorites.(session[\favorites]);
-    session[\favorites] = List.new;
-    favorites.do { |favorite|
-        session[\favorites].add(favorite.deepCopy);
-    };
-    session;
+    ~normalizeDrumLabSession.(~readDrumLabDataFile.(path));
 };
 
 ~favoriteKitRecipe = { |favorites, profileName|
@@ -281,6 +346,7 @@
 
     (
         kind: \jobs,
+        schemaVersion: ~drumLabRecipeSchemaVersion,
         recipeRole: \favoriteKit,
         jobs: jobs,
         options: (
@@ -292,7 +358,19 @@
             macros: nil,
             masterAmp: 1.0,
             maxConcurrentRenders: ~runtimeConfig[\maxConcurrentRenders]
-                ? ~config[\maxConcurrentRenders]
+                ? ~config[\maxConcurrentRenders],
+            kitBalanceMode: ~runtimeConfig[\kitBalanceMode]
+                ? ~config[\kitBalanceMode],
+            kitBalanceTargetRms: ~runtimeConfig[\kitBalanceTargetRms]
+                ? ~config[\kitBalanceTargetRms],
+            kitBalanceTargetPeak: ~runtimeConfig[\kitBalanceTargetPeak]
+                ? ~config[\kitBalanceTargetPeak],
+            kitBalanceMaximumAdjustmentDb:
+                ~runtimeConfig[\kitBalanceMaximumAdjustmentDb]
+                ? ~config[\kitBalanceMaximumAdjustmentDb],
+            kitBalanceToneCompensationDb:
+                ~runtimeConfig[\kitBalanceToneCompensationDb]
+                ? ~config[\kitBalanceToneCompensationDb]
         )
     );
 };

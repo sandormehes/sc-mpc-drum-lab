@@ -2,7 +2,7 @@
 
 (
 ~config = (
-    projectVersion: "0.7.0",
+    projectVersion: "0.9.0",
 
     // Output is kept inside the repository by default.
     outputDirectory: ~projectRoot +/+ "output",
@@ -44,6 +44,15 @@
     tailDuration: 0.02,
     maximumTailPeak: 0.02,
     durationTolerance: 0.02,
+
+    // Apply a conservative, post-render gain match across a completed pack.
+    // Tone compensation only changes the gain target: it prevents very bright
+    // hits from sounding louder than darker ones without EQ-ing the samples.
+    kitBalanceMode: \rms, // \off, \rms, or \peak
+    kitBalanceTargetRms: 0.18,
+    kitBalanceTargetPeak: 0.92,
+    kitBalanceMaximumAdjustmentDb: 6.0,
+    kitBalanceToneCompensationDb: 1.5,
 
     // Set true to start rendering immediately after evaluating main.scd.
     autoStart: false,

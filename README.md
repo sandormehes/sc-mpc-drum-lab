@@ -42,6 +42,13 @@ Five musical controls provide consistent direction across sound families:
 
 Their center positions preserve the profile's original parameter ranges.
 
+Completed packs receive a conservative kit-level balance by default. The pass
+matches RMS while preserving a 0.92 peak ceiling and applies at most 6 dB of
+adjustment. A small brightness-aware compensation prevents sharp hats and
+shakers from appearing louder solely because of their high-frequency content;
+it changes level only, never applies hidden EQ. Every pre/post measurement and
+gain adjustment is recorded in `sample_manifest.txt`.
+
 ### Candidate browser and close variations
 
 Select **Explore** beside any sound family to open the v0.4 candidate browser:
@@ -56,7 +63,7 @@ Select **Explore** beside any sound family to open the v0.4 candidate browser:
 
 Rejecting a candidate never deletes its source run. A close variation records
 its source filename, mutation distance, lock choices, complete parameters, and
-synthesis seed. Its `recipe.json` therefore replays the exact custom job rather
+synthesis seed. Its schema-versioned `recipe.json` therefore replays the exact custom job rather
 than generating an approximation.
 
 ### Sessions and reopening work
@@ -119,6 +126,20 @@ Generate one family only:
 ~generateEngine.(\dancehallKick);
 ```
 
+Start from a deliberately balanced 16-pad foundation instead of a larger
+general-purpose pack:
+
+```supercollider
+~listKitTemplates.();
+~dryRunKitTemplate.(\gqom16);
+~startKitTemplate.(\dancehall16);
+```
+
+The built-in `\dancehall16`, `\grime16`, and `\gqom16` templates use an
+intentional pad order and exactly sixteen generated sounds. Supply normal
+generation overrides when needed, for example
+`~startKitTemplate.(\grime16, (randomSeed: 42, macros: (dirt: 0.7)))`.
+
 Stop scheduling new jobs while allowing active renders to finish:
 
 ```supercollider
@@ -149,6 +170,7 @@ macros: nil,
 masterAmp: nil,
 enabledEngines: nil,
 maxConcurrentRenders: 2,
+kitBalanceMode: \rms,
 autoStart: false
 ```
 
@@ -191,6 +213,11 @@ macros: (
 Keep the same `randomSeed` to reproduce the same parameter sequence. Every
 generated sound also receives a deterministic synthesis seed, including its
 server-side noise generators.
+
+To keep the raw render levels, set `kitBalanceMode: \off`. `\peak` matches
+peaks instead; `\rms` is the recommended musical default. Advanced controls in
+`config.scd` set the RMS and peak targets, maximum adjustment, and the modest
+brightness-aware level compensation.
 
 ### Profiles
 
@@ -346,6 +373,7 @@ sc-mpc-drum-lab/
 │   ├── renderer.scd
 │   ├── manifest.scd
 │   ├── generator.scd
+│   ├── templates.scd
 │   ├── session.scd
 │   ├── favorites.scd
 │   └── gui.scd

@@ -119,11 +119,17 @@
         enabledEngines: families.asArray,
         macros: config[\macros],
         masterAmp: config[\masterAmp],
-        maxConcurrentRenders: config[\maxConcurrentRenders]
+        maxConcurrentRenders: config[\maxConcurrentRenders],
+        kitBalanceMode: config[\kitBalanceMode],
+        kitBalanceTargetRms: config[\kitBalanceTargetRms],
+        kitBalanceTargetPeak: config[\kitBalanceTargetPeak],
+        kitBalanceMaximumAdjustmentDb: config[\kitBalanceMaximumAdjustmentDb],
+        kitBalanceToneCompensationDb: config[\kitBalanceToneCompensationDb]
     );
     recipe = if(families.includes(\preset)) {
         (
             kind: \sound,
+            schemaVersion: ~drumLabRecipeSchemaVersion,
             sound: jobs.first.copy,
             options: (
                 activeProfile: run[\profileName],
@@ -134,12 +140,14 @@
         if(jobs.any { |job| job[\custom] == true }) {
             (
                 kind: \jobs,
+                schemaVersion: ~drumLabRecipeSchemaVersion,
                 jobs: jobs.deepCopy,
                 options: options
             )
         } {
             (
                 kind: \pack,
+                schemaVersion: ~drumLabRecipeSchemaVersion,
                 options: options
             )
         }
@@ -198,6 +206,10 @@
         synth: job[\engine],
         error: message
     ).asCompileString, run);
+};
+
+~writeKitBalanceEntry = { |entry, run|
+    ~appendManifestLine.((kitBalance: entry).asCompileString, run);
 };
 
 ~finalizeManifest = { |state, run|

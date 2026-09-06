@@ -7,6 +7,26 @@
     };
 };
 
+// A lightweight brightness estimate based on the energy in adjacent-sample
+// differences. It is intentionally used only for gain compensation, never to
+// change a sample's timbre with hidden EQ.
+~drumLabBrightness = { |samples, rms|
+    var differenceEnergy, previous;
+    differenceEnergy = 0.0;
+    previous = 0.0;
+    samples.do { |sample, index|
+        if(index > 0) {
+            differenceEnergy = differenceEnergy + (sample - previous).squared;
+        };
+        previous = sample;
+    };
+    if(samples.size < 2 or: { rms <= 0 }) {
+        0.0
+    } {
+        ((differenceEnergy / (samples.size - 1)).sqrt / (rms * 2)).clip(0, 1)
+    };
+};
+
 ~validateRenderedFile = { |path, expectedDuration, runtimeConfig|
     var errors, file, result;
     runtimeConfig = runtimeConfig ? ~runtimeConfig;
@@ -17,7 +37,7 @@
         result = (valid: false, error: "Cannot open rendered WAV file.");
     } {
         protect {
-            var dcOffset, duration, peak, rms, samples;
+            var brightness, dcOffset, duration, peak, rms, samples;
             var tailFrames, tailPeak;
             duration = file.numFrames / file.sampleRate;
             peak = file.channelPeaks.maxItem;
@@ -26,6 +46,7 @@
             file.readData(samples);
             dcOffset = samples.mean;
             rms = samples.mean { |sample| sample.squared }.sqrt;
+            brightness = ~drumLabBrightness.(samples, rms);
             tailFrames = (
                 runtimeConfig[\tailDuration] * file.sampleRate
             ).asInteger.clip(1, file.numFrames);
@@ -79,6 +100,7 @@
                 duration: duration,
                 peak: peak,
                 rms: rms,
+                brightness: brightness,
                 dcOffset: dcOffset,
                 tailPeak: tailPeak
             );
@@ -88,6 +110,55 @@
     };
 
     result;
+};
+
+~applyDrumLabWavGain = { |path, gain|
+    var backupPath, destination, source, temporaryPath, samples;
+    gain = gain ? 1.0;
+    if(gain <= 0) { Error("WAV gain must be positive.").throw };
+    temporaryPath = path + ".balance.partial.wav";
+    source = SoundFile.openRead(path);
+    if(source.isNil) { Error("Cannot open WAV for kit balancing: " ++ path).throw };
+    protect {
+        samples = FloatArray.newClear(source.numFrames * source.numChannels);
+        source.readData(samples);
+        samples.do { |sample, index|
+            samples[index] = (sample * gain).clip(-1, 1);
+        };
+        ~removeFileIfExists.(temporaryPath);
+        destination = SoundFile.new;
+        destination.headerFormat = source.headerFormat;
+        destination.sampleFormat = source.sampleFormat;
+        destination.numChannels = source.numChannels;
+        destination.sampleRate = source.sampleRate;
+        if(destination.openWrite(temporaryPath).not) {
+            Error("Cannot write balanced WAV: " ++ temporaryPath).throw;
+        };
+        protect {
+            destination.writeData(samples);
+        } {
+            destination.close;
+        };
+    } {
+        source.close;
+    };
+    backupPath = path + ".balance.backup.wav";
+    ~removeFileIfExists.(backupPath);
+    File.copy(path, backupPath);
+    if(File.exists(backupPath).not) {
+        ~removeFileIfExists.(temporaryPath);
+        Error("Could not back up WAV before kit balancing: " ++ path).throw;
+    };
+    ~removeFileIfExists.(path);
+    File.copy(temporaryPath, path);
+    ~removeFileIfExists.(temporaryPath);
+    if(File.exists(path).not) {
+        File.copy(backupPath, path);
+        ~removeFileIfExists.(backupPath);
+        Error("Could not promote balanced WAV: " ++ path).throw;
+    };
+    ~removeFileIfExists.(backupPath);
+    path;
 };
 
 ~renderSample = {
