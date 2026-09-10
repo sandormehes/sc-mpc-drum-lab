@@ -105,6 +105,24 @@ stored effective synthesis parameters, updates the favorite sources to the new
 WAV files, and makes the rebuilt kit immediately exportable again. Pad order is
 preserved when saving and loading v0.6 sessions.
 
+### Favorite ratings, tags, and search
+
+Version 1.2 adds portable curation metadata. Ratings use one to five stars and
+tags are short lowercase labels; both are saved in sessions and copied to the
+favorite export manifest. They are attached to a kit favorite, so a source WAV
+can have different roles in different kits.
+
+```supercollider
+~setDrumLabFavoriteRating.(~drumLabFavorites, 0, 5);
+~setDrumLabFavoriteTags.(~drumLabFavorites, 0, [\main, \dark, \intro]);
+~findDrumLabFavorites.(~drumLabFavorites, (
+    family: \gqomKick, minimumRating: 4, tags: [\dark]
+));
+```
+
+`~findDrumLabFavorites` also accepts `query: "kick"`, which searches candidate
+filenames and returns matches in pad order.
+
 ## Command workflow
 
 Open `main.scd`, evaluate the entire file, then inspect the next pack without

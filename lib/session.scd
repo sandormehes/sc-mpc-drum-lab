@@ -144,7 +144,7 @@
         Error("A session can contain at most 16 favorites.").throw;
     };
     favorites.do { |favorite|
-        var job;
+        var job, rating, tags;
         if(favorite.isKindOf(Dictionary).not) {
             Error("Invalid favorite entry in session.").throw;
         };
@@ -154,6 +154,16 @@
             or: { job[\parameters].isKindOf(Dictionary).not }) {
             Error("Session favorite contains an invalid render job.").throw;
         };
+        rating = favorite[\rating];
+        tags = favorite[\tags];
+        if(rating.notNil and: {
+            rating.isInteger.not or: { rating < 1 or: { rating > 5 } }
+        }) { Error("Session favorite has an invalid rating.").throw };
+        if(tags.notNil and: {
+            tags.isSequenceableCollection.not or: { tags.any { |tag|
+                tag.isKindOf(String).not and: { tag.isKindOf(Symbol).not }
+            } }
+        }) { Error("Session favorite has invalid tags.").throw };
     };
     favorites;
 };

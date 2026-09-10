@@ -714,6 +714,7 @@
     "  ~replayRecipe.(path)            Regenerate a saved recipe".postln;
     "  ~loadDrumLabSession.(path)      Load saved GUI/session data".postln;
     "  ~renderSessionFavorites.(data)  Rebuild a session's favorite kit".postln;
+    "  ~findDrumLabFavorites.(favorites, criteria)  Search rated/tagged favorites".postln;
     "  ~cancelGeneration.()            Stop scheduling new renders".postln;
     "  ~status.()                      Show current progress and output".postln;
 };

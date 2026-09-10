@@ -256,6 +256,16 @@ try {
         ~drumLabFavoritePadLabel.(nil, 0) == "A01\nEmpty",
         "empty pads should have clear MPC-oriented labels"
     );
+    ~setDrumLabFavoriteRating.(favoriteList, 0, 5);
+    ~setDrumLabFavoriteTags.(favoriteList, 0, [\Dark, \Main]);
+    assert.(
+        ~findDrumLabFavorites.(favoriteList, (minimumRating: 5, tags: [\dark]))
+            .size == 1,
+        "favorite search should filter durable ratings and tags"
+    );
+    assertThrows.({
+        ~setDrumLabFavoriteRating.(favoriteList, 0, 6);
+    }, "favorite ratings should reject out-of-range values");
     ~removeFileIfExists.(sessionPath);
 
     filenames = thickJobs.collect { |job| job[\filename] };
