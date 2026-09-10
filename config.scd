@@ -2,7 +2,7 @@
 
 (
 ~config = (
-    projectVersion: "1.2.0",
+    projectVersion: "1.3.0",
 
     // Output is kept inside the repository by default.
     outputDirectory: ~projectRoot +/+ "output",
@@ -53,6 +53,9 @@
     kitBalanceTargetPeak: 0.92,
     kitBalanceMaximumAdjustmentDb: 6.0,
     kitBalanceToneCompensationDb: 1.5,
+
+    // Favorite-kit exports can include portable MPC pad/keygroup mapping files.
+    exportMpcMetadata: true,
 
     // Set true to start rendering immediately after evaluating main.scd.
     autoStart: false,

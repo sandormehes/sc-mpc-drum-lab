@@ -2,8 +2,59 @@
 // dependencies so command workflows and tests can use them directly.
 
 (
-~exportDrumLabFavorites = { |favorites|
-    var baseName, candidate, counter, file, missing, outputRoot, recipe;
+~mpcPadCoordinates = { |index|
+    var column, row;
+    if(index.isInteger.not or: { index < 0 or: { index > 15 } }) {
+        Error("MPC pad indexes must be between 0 and 15.").throw;
+    };
+    column = (index % 4) + 1;
+    row = (index / 4).floor + 1;
+    (pad: "A" ++ ~zeroPadNumber.(index + 1, 2), row: row, column: column);
+};
+
+~writeMpcFavoriteMetadata = { |directory, favorites, filenames|
+    var csv, map, mapPath, csvPath;
+    mapPath = directory +/+ "MPC1000_PROGRAM_MAP.txt";
+    csvPath = directory +/+ "MPC_KEYGROUP_MAP.csv";
+    map = File(mapPath, "w");
+    csv = File(csvPath, "w");
+    if(map.isOpen.not or: { csv.isOpen.not }) {
+        if(map.isOpen) { map.close };
+        if(csv.isOpen) { csv.close };
+        Error("Cannot create MPC metadata files.").throw;
+    };
+    protect {
+        map.write("SC MPC DRUM LAB — MPC1000 PROGRAM MAP\n");
+        map.write("Import the matching WAV files into an MPC program, assigning each file to the listed pad.\n");
+        map.write("All samples are one-shot, mono 44.1 kHz / 16-bit WAV files.\n\n");
+        csv.write("pad,row,column,wav,family,rating,tags\n");
+        favorites.do { |favorite, index|
+            var location, tags;
+            location = ~mpcPadCoordinates.(index);
+            tags = (favorite[\tags] ? []).collect(_.asString).join("|");
+            map.write(location[\pad] ++ "  row " ++ location[\row]
+                ++ ", column " ++ location[\column] ++ "  "
+                ++ filenames[index] ++ "  " ++ favorite[\job][\family]
+                ++ "\n");
+            csv.write(location[\pad] ++ "," ++ location[\row] ++ ","
+                ++ location[\column] ++ "," ++ filenames[index] ++ ","
+                ++ favorite[\job][\family] ++ ","
+                ++ (favorite[\rating] ? "") ++ "," ++ tags ++ "\n");
+        };
+    } {
+        map.close;
+        csv.close;
+    };
+    (programMap: mapPath, keygroupMap: csvPath);
+};
+
+// Reuse this options Event when preparing source WAVs for a sampler and no
+// kit-level gain match is wanted.
+~dryExportOptions = { (kitBalanceMode: \off) };
+
+~exportDrumLabFavorites = { |favorites, options|
+    var baseName, candidate, counter, file, filenames, metadata, missing;
+    var outputRoot, recipe, writeMpcMetadata;
     if(favorites.isNil or: { favorites.isEmpty }) {
         Error("There are no favorite previews to export.").throw;
     };
@@ -27,6 +78,12 @@
         counter = counter + 1;
     });
     File.mkdir(candidate);
+    filenames = List.new;
+    writeMpcMetadata = if(options.notNil and: { options[\mpcMetadata].notNil }) {
+        options[\mpcMetadata]
+    } {
+        (~runtimeConfig[\exportMpcMetadata] ? ~config[\exportMpcMetadata]) ? true
+    };
 
     file = File(candidate +/+ "favorites_manifest.txt", "w");
     if(file.isOpen.not) {
@@ -45,6 +102,7 @@
             if(File.exists(destination).not) {
                 Error("Could not export favorite: " ++ filename).throw;
             };
+            filenames.add(filename);
             file.write((
                 pad: index + 1,
                 filename: filename,
@@ -63,6 +121,9 @@
     };
     recipe = ~favoriteKitRecipe.(favorites, ~activeProfile);
     ~writeDrumLabDataFile.(candidate +/+ "favorites_recipe.json", recipe);
+    if(writeMpcMetadata == true) {
+        metadata = ~writeMpcFavoriteMetadata.(candidate, favorites, filenames);
+    };
     candidate;
 };
 

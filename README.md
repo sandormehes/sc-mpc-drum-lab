@@ -123,6 +123,23 @@ can have different roles in different kits.
 `~findDrumLabFavorites` also accepts `query: "kick"`, which searches candidate
 filenames and returns matches in pad order.
 
+### MPC sampler handoff
+
+Version 1.3 adds optional sampler metadata to favorite-kit exports. Alongside
+the pad-named WAVs, the exporter writes `MPC1000_PROGRAM_MAP.txt` and
+`MPC_KEYGROUP_MAP.csv`. They list each `A01`–`A16` pad, its 4×4 position, WAV,
+family, rating, and tags. Import the WAVs into your MPC program and use the map
+to assign them; the files are portable assignment aids, not a proprietary MPC
+program file.
+
+Set `exportMpcMetadata: false` in `config.scd`, or pass
+`(mpcMetadata: false)` to `~exportDrumLabFavorites`, to omit them. To render a
+kit without its normal conservative gain match, use:
+
+```supercollider
+~startKitTemplate.(\gqom16, ~dryExportOptions.());
+```
+
 ## Command workflow
 
 Open `main.scd`, evaluate the entire file, then inspect the next pack without

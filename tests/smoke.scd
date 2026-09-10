@@ -266,6 +266,15 @@ try {
     assertThrows.({
         ~setDrumLabFavoriteRating.(favoriteList, 0, 6);
     }, "favorite ratings should reject out-of-range values");
+    assert.(
+        ~mpcPadCoordinates.(4)[\pad] == "A05"
+            and: { ~mpcPadCoordinates.(4)[\row] == 2 },
+        "MPC metadata should preserve four-by-four pad locations"
+    );
+    assert.(
+        ~dryExportOptions.()[\kitBalanceMode] == \off,
+        "dry export options should explicitly disable kit balancing"
+    );
     ~removeFileIfExists.(sessionPath);
 
     filenames = thickJobs.collect { |job| job[\filename] };

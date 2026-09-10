@@ -240,6 +240,9 @@
             };
         };
     };
+    if(runtimeConfig[\exportMpcMetadata].isBoolean.not) {
+        Error("exportMpcMetadata must be true or false.").throw;
+    };
 
     runtimeConfig[\enabledEngines].do { |engineName|
         var count, spec;
@@ -715,6 +718,7 @@
     "  ~loadDrumLabSession.(path)      Load saved GUI/session data".postln;
     "  ~renderSessionFavorites.(data)  Rebuild a session's favorite kit".postln;
     "  ~findDrumLabFavorites.(favorites, criteria)  Search rated/tagged favorites".postln;
+    "  ~dryExportOptions.()            Render source WAVs without kit balancing".postln;
     "  ~cancelGeneration.()            Stop scheduling new renders".postln;
     "  ~status.()                      Show current progress and output".postln;
 };
