@@ -2,7 +2,7 @@
 
 (
 ~config = (
-    projectVersion: "1.3.3",
+    projectVersion: "1.3.4",
 
     // Output is kept inside the repository by default.
     outputDirectory: ~projectRoot +/+ "output",
