@@ -13,6 +13,12 @@ its own run directory and includes a validation-aware manifest.
 - `scsynth` (included with SuperCollider)
 - No Quarks or third-party extensions
 
+## Reliability and releases
+
+Version 1.0 runs the language and offline-render smoke suites in GitHub Actions
+on Ubuntu and macOS. See [the release checklist](docs/RELEASE.md) for the
+manual GUI pass and reproducible reference-pack recipes used before releases.
+
 ## Quick start: control panel
 
 1. Open `gui.scd` in the SuperCollider IDE.

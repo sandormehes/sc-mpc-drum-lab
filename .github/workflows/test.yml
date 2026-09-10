@@ -1,0 +1,28 @@
+name: Test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  smoke:
+    name: Smoke tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install SuperCollider (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes supercollider-language supercollider-server
+      - name: Install SuperCollider (macOS)
+        if: runner.os == 'macOS'
+        run: brew install supercollider
+      - name: Run language smoke test
+        run: ./scripts/test.sh tests/smoke.scd
+      - name: Run offline render smoke test
+        run: ./scripts/test.sh tests/render_smoke.scd
