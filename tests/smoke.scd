@@ -354,8 +354,8 @@ try {
         "half of the thickClub pack should be percussion"
     );
     assert.(
-        ~kitTemplates.size == 3,
-        "the curated template library should expose three starter kits"
+        ~kitTemplates.size == 6,
+        "the curated template library should expose six starter kits"
     );
     assert.(
         ~planJobs.(nil, ~kitTemplateOptions.(\gqom16)).size == 16,
@@ -369,6 +369,19 @@ try {
     assertThrows.({
         ~kitTemplateOptions.(\notAKit);
     }, "unknown kit templates should be rejected safely");
+    assert.(
+        ~macroSnapshotOptions.(\wornTape)[\macros][\dirt] == 0.82,
+        "macro snapshots should expose stable reusable directions"
+    );
+    assert.(
+        ~planJobs.(nil, ~kitTemplateOptions.(\electro16)).size == 16,
+        "the electro template should plan exactly one MPC pad bank"
+    );
+    assert.(
+        ~resolveProfileContext.(\industrial, nil)[\config][\enabledEngines]
+            .includes(\grimeSnare),
+        "focused profiles should preserve their intended family selection"
+    );
 
     "SC MPC Drum Lab smoke tests passed.".postln;
     0.exit;

@@ -225,12 +225,15 @@ peaks instead; `\rms` is the recommended musical default. Advanced controls in
 `config.scd` set the RMS and peak targets, maximum adjustment, and the modest
 brightness-aware level compensation.
 
-### Profiles
+### Profiles and macro snapshots
 
 Two profiles are available:
 
 - `\thickClub` — 60 balanced dancehall, grime, and gqom samples by default
 - `\original` — 60 broad experimental samples by default
+- `\dubTechno` — spacious, weight-led percussion foundations
+- `\electro` — punchy, bright drum-machine foundations
+- `\industrial` — dense, deliberately degraded club percussion
 
 Select one in `config.scd`:
 
@@ -240,6 +243,14 @@ activeProfile: \original
 
 Profiles register their own engines and defaults. They do not overwrite the
 original SynthDefs or the shared job planner, so multiple profiles can coexist.
+
+Version 1.1 also includes reusable macro snapshots. List them with
+`~listMacroSnapshots.()` and apply one to any command workflow:
+
+```supercollider
+~startKitTemplate.(\electro16);
+~start.(nil, ~macroSnapshotOptions.(\wornTape));
+```
 
 ## Output and safety
 

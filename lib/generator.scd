@@ -704,6 +704,7 @@
     "  ~openDrumLab.()                 Open the control panel".postln;
     "  ~openFavoriteKitBuilder.(~drumLabFavorites)  Arrange the 16-pad kit".postln;
     "  ~listProfiles.()                List available profiles".postln;
+    "  ~listMacroSnapshots.()          List reusable macro directions".postln;
     "  ~listKitTemplates.()            List curated 16-pad kit templates".postln;
     "  ~startKitTemplate.(\\gqom16)     Generate a curated 16-pad kit".postln;
     "  ~listFamilies.()                List families in the active profile".postln;
