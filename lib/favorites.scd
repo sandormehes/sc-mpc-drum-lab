@@ -174,12 +174,15 @@
         minimumRating.isInteger.not or: { minimumRating < 1 or: { minimumRating > 5 } }
     }) { Error("minimumRating must be an integer from 1 to 5.").throw };
     (favorites ? []).select { |favorite|
-        var filename, tags;
+        var filename, missingTag, tags;
         tags = (favorite[\tags] ? []).collect { |tag| tag.asString.toLower };
         filename = (favorite[\job][\filename] ? "").asString.toLower;
+        missingTag = requiredTags.detect { |tag|
+            tags.includes(tag.asString.toLower).not
+        };
         (family.isNil or: { favorite[\job][\family] == family })
         and: { minimumRating.isNil or: { (favorite[\rating] ? 0) >= minimumRating } }
-        and: { requiredTags.every { |tag| tags.includes(tag.asString.toLower) } }
+        and: { missingTag.isNil }
         and: { query.isNil or: { filename.contains(query.asString.toLower) } }
     };
 };
