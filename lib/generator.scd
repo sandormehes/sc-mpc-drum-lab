@@ -240,7 +240,8 @@
             };
         };
     };
-    if(runtimeConfig[\exportMpcMetadata].isBoolean.not) {
+    if((runtimeConfig[\exportMpcMetadata] != true)
+        and: { runtimeConfig[\exportMpcMetadata] != false }) {
         Error("exportMpcMetadata must be true or false.").throw;
     };
 
