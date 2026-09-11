@@ -3,12 +3,12 @@
 
 (
 ~playRenderedFile = { |path|
-    var server;
+    var playBuffer, server;
     if(path.isNil or: { File.exists(path).not }) {
         "Cannot preview: rendered file was not found.".warn;
     } {
         server = Server.default;
-        server.waitForBoot {
+        playBuffer = {
             Buffer.read(server, path, action: { |buffer|
                 {
                     if(~drumLabPreviewBuffer.notNil) {
@@ -27,9 +27,16 @@
                 }.defer;
             });
         };
-        if(server.serverRunning.not) {
+        if(server.serverRunning) {
+            playBuffer.value;
+        } {
+            server.waitForBoot { playBuffer.value };
+            if(server.serverBooting) {
+                "Audio server is starting; preview queued...".postln;
+            } {
             "Booting the audio server for preview...".postln;
             server.boot;
+            };
         };
     };
 };
