@@ -27,6 +27,11 @@ try {
         try { function.value } { didThrow = true };
         assert.(didThrow, message);
     };
+    assert.(
+        ~config[\previewServerPort].isInteger
+            and: { ~config[\previewServerPort] > 1024 },
+        "preview server needs a dedicated unprivileged UDP port"
+    );
 
     ~config[\activeProfile] = \original;
     originalJobs = ~planJobs.();

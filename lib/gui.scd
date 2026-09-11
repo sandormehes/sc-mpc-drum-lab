@@ -7,7 +7,21 @@
     if(path.isNil or: { File.exists(path).not }) {
         "Cannot preview: rendered file was not found.".warn;
     } {
-        server = Server.default;
+        if(~drumLabPreviewServer.isNil
+            or: { ~drumLabPreviewServer.addr.port
+                != (~runtimeConfig[\previewServerPort]
+                    ? ~config[\previewServerPort]) }) {
+            if(~drumLabPreviewServer.notNil
+                and: { ~drumLabPreviewServer.serverRunning }) {
+                ~drumLabPreviewServer.quit;
+            };
+            ~drumLabPreviewServer = Server(
+                \drumLabPreview,
+                NetAddr("127.0.0.1", ~runtimeConfig[\previewServerPort]
+                    ? ~config[\previewServerPort])
+            );
+        };
+        server = ~drumLabPreviewServer;
         playBuffer = {
             Buffer.read(server, path, action: { |buffer|
                 {
@@ -1227,6 +1241,10 @@
         if(~drumLabPreviewBuffer.notNil) {
             ~drumLabPreviewBuffer.free;
             ~drumLabPreviewBuffer = nil;
+        };
+        if(~drumLabPreviewServer.notNil
+            and: { ~drumLabPreviewServer.serverRunning }) {
+            ~drumLabPreviewServer.quit;
         };
         ~applyDrumLabSessionToGui = nil;
         ~currentDrumLabGuiOptions = nil;

@@ -10,6 +10,10 @@
     // User-created lab sessions are stored separately from rendered audio.
     sessionDirectory: ~projectRoot +/+ "sessions",
 
+    // Preview uses its own server rather than SuperCollider's shared 57110
+    // port, so another project cannot prevent Drum Lab auditioning.
+    previewServerPort: 57120,
+
     sampleRate: 44100,
     headerFormat: "WAV",
     sampleFormat: "int16",

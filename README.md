@@ -34,6 +34,9 @@ The enforced test and release gates are documented in [QA.md](docs/QA.md).
    **Generate selected kit** to render the complete selection.
 
 The control panel shows live progress and can open the finished output folder.
+Preview uses its own local audio-server port (`57120` by default), avoiding
+conflicts with another SuperCollider project using the standard `57110` port.
+Change `previewServerPort` in `config.scd` only if that dedicated port is in use.
 Preview files use the same validated offline renderer as final samples, so the
 sound you audition is the sound that was exported. Each Preview click creates a
 new reproducible candidate. Keep up to 16 favorites and export them with
