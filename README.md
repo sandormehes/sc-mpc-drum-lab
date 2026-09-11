@@ -18,6 +18,7 @@ its own run directory and includes a validation-aware manifest.
 Version 1.0 runs the language and offline-render smoke suites in GitHub Actions
 on Ubuntu and macOS. See [the release checklist](docs/RELEASE.md) for the
 manual GUI pass and reproducible reference-pack recipes used before releases.
+The enforced test and release gates are documented in [QA.md](docs/QA.md).
 
 ## Quick start: control panel
 
