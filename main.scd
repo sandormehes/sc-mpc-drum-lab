@@ -28,6 +28,7 @@ loadProject = { |projectDirectory|
     (projectDirectory +/+ "synthdefs/metal.scd").load;
     (projectDirectory +/+ "synthdefs/glitch.scd").load;
     (projectDirectory +/+ "synthdefs/resonator.scd").load;
+    (projectDirectory +/+ "synthdefs/ping.scd").load;
     (projectDirectory +/+ "synthdefs/club_perc.scd").load;
     (projectDirectory +/+ "synthdefs/thick_club.scd").load;
 

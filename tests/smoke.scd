@@ -7,7 +7,7 @@ var labSession;
 var loadedSession, macroJobs, originalJobs, projectRoot, repeatJobs;
 var repeatVariation, selectedJobs, session, sessionJobs, sessionPath;
 var randomAfterPlanning, randomExpected, randomState, runningConfig;
-var originalPump, originalWriteEntry, settlementState;
+var originalPump, originalWriteEntry, pingJobs, pingOptions, settlementState;
 var sessionOptions, thickJobs, variationJob;
 
 try {
@@ -101,6 +101,20 @@ try {
         engineCounts: (dancehallKick: 2, grimeSnare: 3)
     ));
     assert.(customJobs.size == 5, "per-family counts should shape the pack");
+
+    pingOptions = ~kitTemplateOptions.(\ping16);
+    pingJobs = ~planJobs.(nil, pingOptions);
+    assert.(pingJobs.size == 16, "Ping 16 should plan exactly sixteen pads");
+    assert.(
+        pingJobs.count { |job| job[\family] == \sonarPing } == 6
+            and: { pingJobs.count { |job| job[\family] == \crystalPing } == 6 }
+            and: { pingJobs.count { |job| job[\family] == \packetPing } == 4 },
+        "Ping 16 should preserve its intended voice balance"
+    );
+    assert.(
+        pingJobs.any { |job| job[\engine] == \sonarPing },
+        "Ping 16 should use the dedicated sonar SynthDef"
+    );
     assert.(
         customJobs.count { |job| job[\family] == \dancehallKick } == 2,
         "dancehallKick should use its family count"
@@ -373,8 +387,8 @@ try {
         "half of the thickClub pack should be percussion"
     );
     assert.(
-        ~kitTemplates.size == 6,
-        "the curated template library should expose six starter kits"
+        ~kitTemplates.size == 7,
+        "the curated template library should expose seven starter kits"
     );
     assert.(
         ~planJobs.(nil, ~kitTemplateOptions.(\gqom16)).size == 16,
