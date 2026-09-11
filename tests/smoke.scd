@@ -387,8 +387,8 @@ try {
         "half of the thickClub pack should be percussion"
     );
     assert.(
-        ~kitTemplates.size == 6,
-        "the curated template library should expose six starter kits"
+        ~kitTemplates.size == 7,
+        "the curated template library should expose seven starter kits"
     );
     assert.(
         ~planJobs.(nil, ~kitTemplateOptions.(\gqom16)).size == 16,
