@@ -89,6 +89,12 @@ try {
             and: {
                 File.exists(exportDirectory +/+ "favorites_recipe.json")
             }
+            and: {
+                File.exists(exportDirectory +/+ "MPC1000_PROGRAM_MAP.txt")
+            }
+            and: {
+                File.exists(exportDirectory +/+ "MPC_KEYGROUP_MAP.csv")
+            }
             and: { favoriteRecipe[\recipeRole] == \favoriteKit }
             and: { favoriteRecipe[\jobs].size == 2 }
             and: {

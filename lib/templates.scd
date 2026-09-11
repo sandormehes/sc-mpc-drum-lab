@@ -104,4 +104,31 @@
     ),
     macros: nil
 ));
+
+~registerDrumLabKitTemplate.(\dubTechno16, (
+    label: "Dub Techno 16",
+    description: "Subby kicks and toms with spacious metal, rims, and shaker motion.",
+    activeProfile: \dubTechno,
+    families: [\gqomKick, \gqomTom, \gqomPerc, \dancehallRim, \dancehallShaker],
+    engineCounts: (gqomKick: 4, gqomTom: 3, gqomPerc: 3, dancehallRim: 3, dancehallShaker: 3),
+    macros: ~macroSnapshotOptions.(\heavy)[\macros]
+));
+
+~registerDrumLabKitTemplate.(\electro16, (
+    label: "Electro 16",
+    description: "Fast, punchy drum-machine foundations with metal and hats.",
+    activeProfile: \electro,
+    families: [\grimeKick, \dancehallSnare, \gqomPerc, \dancehallRim, \grimeHat],
+    engineCounts: (grimeKick: 4, dancehallSnare: 3, gqomPerc: 3, dancehallRim: 2, grimeHat: 4),
+    macros: ~macroSnapshotOptions.(\cutting)[\macros]
+));
+
+~registerDrumLabKitTemplate.(\industrial16, (
+    label: "Industrial 16",
+    description: "Driven kicks and snares with dark, degraded metallic detail.",
+    activeProfile: \industrial,
+    families: [\grimeKick, \grimeSnare, \gqomPerc, \gqomTom, \grimeHat],
+    engineCounts: (grimeKick: 4, grimeSnare: 4, gqomPerc: 3, gqomTom: 2, grimeHat: 3),
+    macros: ~macroSnapshotOptions.(\wornTape)[\macros]
+));
 )

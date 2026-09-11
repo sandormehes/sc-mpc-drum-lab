@@ -240,6 +240,10 @@
             };
         };
     };
+    if((runtimeConfig[\exportMpcMetadata] != true)
+        and: { runtimeConfig[\exportMpcMetadata] != false }) {
+        Error("exportMpcMetadata must be true or false.").throw;
+    };
 
     runtimeConfig[\enabledEngines].do { |engineName|
         var count, spec;
@@ -704,6 +708,7 @@
     "  ~openDrumLab.()                 Open the control panel".postln;
     "  ~openFavoriteKitBuilder.(~drumLabFavorites)  Arrange the 16-pad kit".postln;
     "  ~listProfiles.()                List available profiles".postln;
+    "  ~listMacroSnapshots.()          List reusable macro directions".postln;
     "  ~listKitTemplates.()            List curated 16-pad kit templates".postln;
     "  ~startKitTemplate.(\\gqom16)     Generate a curated 16-pad kit".postln;
     "  ~listFamilies.()                List families in the active profile".postln;
@@ -713,6 +718,8 @@
     "  ~replayRecipe.(path)            Regenerate a saved recipe".postln;
     "  ~loadDrumLabSession.(path)      Load saved GUI/session data".postln;
     "  ~renderSessionFavorites.(data)  Rebuild a session's favorite kit".postln;
+    "  ~findDrumLabFavorites.(favorites, criteria)  Search rated/tagged favorites".postln;
+    "  ~dryExportOptions.()            Render source WAVs without kit balancing".postln;
     "  ~cancelGeneration.()            Stop scheduling new renders".postln;
     "  ~status.()                      Show current progress and output".postln;
 };

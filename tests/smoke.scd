@@ -256,6 +256,25 @@ try {
         ~drumLabFavoritePadLabel.(nil, 0) == "A01\nEmpty",
         "empty pads should have clear MPC-oriented labels"
     );
+    ~setDrumLabFavoriteRating.(favoriteList, 0, 5);
+    ~setDrumLabFavoriteTags.(favoriteList, 0, [\Dark, \Main]);
+    assert.(
+        ~findDrumLabFavorites.(favoriteList, (minimumRating: 5, tags: [\dark]))
+            .size == 1,
+        "favorite search should filter durable ratings and tags"
+    );
+    assertThrows.({
+        ~setDrumLabFavoriteRating.(favoriteList, 0, 6);
+    }, "favorite ratings should reject out-of-range values");
+    assert.(
+        ~mpcPadCoordinates.(4)[\pad] == "A05"
+            and: { ~mpcPadCoordinates.(4)[\row] == 2 },
+        "MPC metadata should preserve four-by-four pad locations"
+    );
+    assert.(
+        ~dryExportOptions.()[\kitBalanceMode] == \off,
+        "dry export options should explicitly disable kit balancing"
+    );
     ~removeFileIfExists.(sessionPath);
 
     filenames = thickJobs.collect { |job| job[\filename] };
@@ -354,8 +373,8 @@ try {
         "half of the thickClub pack should be percussion"
     );
     assert.(
-        ~kitTemplates.size == 3,
-        "the curated template library should expose three starter kits"
+        ~kitTemplates.size == 6,
+        "the curated template library should expose six starter kits"
     );
     assert.(
         ~planJobs.(nil, ~kitTemplateOptions.(\gqom16)).size == 16,
@@ -369,6 +388,19 @@ try {
     assertThrows.({
         ~kitTemplateOptions.(\notAKit);
     }, "unknown kit templates should be rejected safely");
+    assert.(
+        ~macroSnapshotOptions.(\wornTape)[\macros][\dirt] == 0.82,
+        "macro snapshots should expose stable reusable directions"
+    );
+    assert.(
+        ~planJobs.(nil, ~kitTemplateOptions.(\electro16)).size == 16,
+        "the electro template should plan exactly one MPC pad bank"
+    );
+    assert.(
+        ~resolveProfileContext.(\industrial, nil)[\config][\enabledEngines]
+            .includes(\grimeSnare),
+        "focused profiles should preserve their intended family selection"
+    );
 
     "SC MPC Drum Lab smoke tests passed.".postln;
     0.exit;

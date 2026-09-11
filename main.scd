@@ -35,6 +35,7 @@ loadProject = { |projectDirectory|
     (projectDirectory +/+ "lib/renderer.scd").load;
     (projectDirectory +/+ "lib/manifest.scd").load;
     (projectDirectory +/+ "presets/presets.scd").load;
+    (projectDirectory +/+ "lib/macro_snapshots.scd").load;
     (projectDirectory +/+ "lib/generator.scd").load;
 
     // Profiles register additional engines, ranges, and defaults. Loading all

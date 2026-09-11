@@ -16,6 +16,16 @@ else
     exit 1
 fi
 
+# GitHub Actions Linux runners do not provide an X11/Wayland display. sclang
+# still links Qt while running language-only scripts, so select Qt's headless
+# backend unless the caller has explicitly chosen one or supplied a display.
+if [ "$(uname -s)" = "Linux" ] \
+    && [ -z "${QT_QPA_PLATFORM:-}" ] \
+    && [ -z "${DISPLAY:-}" ] \
+    && [ -z "${WAYLAND_DISPLAY:-}" ]; then
+    export QT_QPA_PLATFORM=offscreen
+fi
+
 if [ -n "${SCLANG_ARCH:-}" ]; then
     exec arch "-$SCLANG_ARCH" "$sc_binary" "$project_dir/$test_file"
 fi

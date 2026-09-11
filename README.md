@@ -13,6 +13,12 @@ its own run directory and includes a validation-aware manifest.
 - `scsynth` (included with SuperCollider)
 - No Quarks or third-party extensions
 
+## Reliability and releases
+
+Version 1.0 runs the language and offline-render smoke suites in GitHub Actions
+on Ubuntu and macOS. See [the release checklist](docs/RELEASE.md) for the
+manual GUI pass and reproducible reference-pack recipes used before releases.
+
 ## Quick start: control panel
 
 1. Open `gui.scd` in the SuperCollider IDE.
@@ -98,6 +104,41 @@ Pads whose original audio is unavailable show `[REBUILD]`. Rebuilding uses the
 stored effective synthesis parameters, updates the favorite sources to the new
 WAV files, and makes the rebuilt kit immediately exportable again. Pad order is
 preserved when saving and loading v0.6 sessions.
+
+### Favorite ratings, tags, and search
+
+Version 1.2 adds portable curation metadata. Ratings use one to five stars and
+tags are short lowercase labels; both are saved in sessions and copied to the
+favorite export manifest. They are attached to a kit favorite, so a source WAV
+can have different roles in different kits.
+
+```supercollider
+~setDrumLabFavoriteRating.(~drumLabFavorites, 0, 5);
+~setDrumLabFavoriteTags.(~drumLabFavorites, 0, [\main, \dark, \intro]);
+~findDrumLabFavorites.(~drumLabFavorites, (
+    family: \gqomKick, minimumRating: 4, tags: [\dark]
+));
+```
+
+`~findDrumLabFavorites` also accepts `query: "kick"`, which searches candidate
+filenames and returns matches in pad order.
+
+### MPC sampler handoff
+
+Version 1.3 adds optional sampler metadata to favorite-kit exports. Alongside
+the pad-named WAVs, the exporter writes `MPC1000_PROGRAM_MAP.txt` and
+`MPC_KEYGROUP_MAP.csv`. They list each `A01`–`A16` pad, its 4×4 position, WAV,
+family, rating, and tags. Import the WAVs into your MPC program and use the map
+to assign them; the files are portable assignment aids, not a proprietary MPC
+program file.
+
+Set `exportMpcMetadata: false` in `config.scd`, or pass
+`(mpcMetadata: false)` to `~exportDrumLabFavorites`, to omit them. To render a
+kit without its normal conservative gain match, use:
+
+```supercollider
+~startKitTemplate.(\gqom16, ~dryExportOptions.());
+```
 
 ## Command workflow
 
@@ -219,12 +260,15 @@ peaks instead; `\rms` is the recommended musical default. Advanced controls in
 `config.scd` set the RMS and peak targets, maximum adjustment, and the modest
 brightness-aware level compensation.
 
-### Profiles
+### Profiles and macro snapshots
 
 Two profiles are available:
 
 - `\thickClub` — 60 balanced dancehall, grime, and gqom samples by default
 - `\original` — 60 broad experimental samples by default
+- `\dubTechno` — spacious, weight-led percussion foundations
+- `\electro` — punchy, bright drum-machine foundations
+- `\industrial` — dense, deliberately degraded club percussion
 
 Select one in `config.scd`:
 
@@ -234,6 +278,14 @@ activeProfile: \original
 
 Profiles register their own engines and defaults. They do not overwrite the
 original SynthDefs or the shared job planner, so multiple profiles can coexist.
+
+Version 1.1 also includes reusable macro snapshots. List them with
+`~listMacroSnapshots.()` and apply one to any command workflow:
+
+```supercollider
+~startKitTemplate.(\electro16);
+~start.(nil, ~macroSnapshotOptions.(\wornTape));
+```
 
 ## Output and safety
 
