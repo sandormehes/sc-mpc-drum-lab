@@ -664,7 +664,7 @@
 };
 
 ~openDrumLab = {
-    var applySession, buildFamilyRows, buildOptions, cancelButton, countLabel;
+    var applySession, applyTemplate, buildFamilyRows, buildOptions, cancelButton, countLabel;
     var descriptionText, dryRunButton, familyRows, familyScroll;
     var exportButton, favorites, generateButton, keepButton, lastPreview;
     var kitBuilderButton, listener, loadSessionButton, macroSliders, openButton;
@@ -672,6 +672,7 @@
     var profileMenu, profileNames, profileSymbols, progress, randomizeButton;
     var replayRecipeButton, saveSessionButton, seedBox, setBusy, webExportButton;
     var setFavoriteButtons, setStatus, statusText, window;
+    var templateMenu, templateNames, templateSymbols;
 
     if(~drumLabWindow.notNil) {
         try { ~drumLabWindow.close } { };
@@ -688,10 +689,14 @@
     profileNames = profileSymbols.collect { |name|
         ~profiles[name][\displayName]
     };
+    templateSymbols = ~kitTemplates.keys.asArray.sort;
+    templateNames = ["Kit template..."] ++ templateSymbols.collect { |name|
+        ~kitTemplates[name][\label]
+    };
 
     window = Window(
         "SC MPC Drum Lab",
-        Rect(80, 40, 760, 850),
+        Rect(80, 40, 760, 900),
         resizable: false
     );
     ~drumLabWindow = window;
@@ -750,6 +755,7 @@
             dryRunButton.enabled = busy.not;
             cancelButton.enabled = busy;
             profileMenu.enabled = busy.not;
+            if(templateMenu.notNil) { templateMenu.enabled = busy.not };
             randomizeButton.enabled = busy.not;
             seedBox.enabled = busy.not;
             saveSessionButton.enabled = busy.not;
@@ -952,6 +958,25 @@
             });
     };
 
+    applyTemplate = { |templateName|
+        var counts, options, profileIndex;
+        options = ~kitTemplateOptions.(templateName);
+        profileIndex = profileSymbols.indexOf(options[\activeProfile]);
+        if(profileIndex.isNil) { Error("Kit template profile is unavailable.").throw };
+        profileMenu.value = profileIndex;
+        buildFamilyRows.();
+        counts = options[\engineCounts] ? ();
+        familyRows.keysValuesDo { |engineName, row|
+            row[\enabled].value = options[\enabledEngines].includes(engineName);
+            row[\count].value = counts[engineName] ? 1;
+        };
+        macroSliders.keysValuesDo { |name, slider|
+            slider.value = (options[\macros] ? ())[name] ? 0.5;
+        };
+        setStatus.("Loaded " ++ ~kitTemplates[templateName][\label]
+            ++ ". Generate it or adjust its voices first.");
+    };
+
     // Small public hooks make session restoration scriptable and testable
     // without exposing individual GUI widgets.
     ~applyDrumLabSessionToGui = { |session| applySession.(session) };
@@ -1138,6 +1163,16 @@
                     ~startJobs.(recipe[\jobs], recipe[\options]);
                 };
             } { |error| setStatus.(error.errorString) };
+        });
+
+    StaticText(window, Rect(20, 820, 130, 22)).string_("Starter kit");
+    templateMenu = PopUpMenu(window, Rect(150, 818, 270, 26))
+        .items_(templateNames)
+        .action_({ |menu|
+            if(menu.value > 0) {
+                try { applyTemplate.(templateSymbols[menu.value - 1]) }
+                { |error| setStatus.(error.errorString) };
+            };
         });
 
     listener = { |event, data|
