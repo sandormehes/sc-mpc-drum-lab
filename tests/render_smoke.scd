@@ -18,7 +18,15 @@ try {
     ~config[\activeProfile] = \thickClub;
     ~config[\samplesPerEngine] = 1;
     ~config[\maxConcurrentRenders] = 2;
-    ~start.([\gqomTom, \dancehallRim, \grimeHat, \dancehallShaker, \sonarPing]);
+    ~start.([
+        \gqomTom, \dancehallRim, \grimeHat, \dancehallShaker, \sonarPing
+    ], (
+        activeProfile: \ping,
+        samplesPerEngine: 1,
+        enabledEngines: [
+            \gqomTom, \dancehallRim, \grimeHat, \dancehallShaker, \sonarPing
+        ]
+    ));
     // Active validation must use the run snapshot, not compatibility globals.
     ~runtimeConfig[\maximumTailPeak] = -1;
 
