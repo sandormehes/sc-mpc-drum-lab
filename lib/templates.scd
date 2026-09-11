@@ -134,4 +134,13 @@
     engineCounts: (grimeKick: 4, grimeSnare: 4, gqomPerc: 3, gqomTom: 2, grimeHat: 3),
     macros: ~macroSnapshotOptions.(\wornTape)[\macros]
 ));
+
+~registerDrumLabKitTemplate.(\ping16, (
+    label: "Ping 16",
+    description: "Sonar sweeps, glassy resonators, and clipped digital pings.",
+    activeProfile: \ping,
+    families: [\sonarPing, \crystalPing, \packetPing],
+    engineCounts: (sonarPing: 6, crystalPing: 6, packetPing: 4),
+    macros: nil
+));
 )

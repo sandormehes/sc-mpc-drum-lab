@@ -181,6 +181,18 @@ intentional pad order and exactly sixteen generated sounds. Supply normal
 generation overrides when needed, for example
 `~startKitTemplate.(\grime16, (randomSeed: 42, macros: (dirt: 0.7)))`.
 
+For a 16-pad collection of original sonar sweeps, glassy resonators, and short
+digital pings, use:
+
+```supercollider
+~startKitTemplate.(\ping16);
+```
+
+`ping16` is intended for sparse, bass-led rhythms. It deliberately generates
+three complementary voices: longer falling sonar pings, clean crystalline
+strikes, and clipped packet-like accents. Use **Explore** to keep a focused
+selection, then export the favourites as a four-role web kit or an MPC kit.
+
 Stop scheduling new jobs while allowing active renders to finish:
 
 ```supercollider
