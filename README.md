@@ -38,6 +38,11 @@ sound you audition is the sound that was exported. Each Preview click creates a
 new reproducible candidate. Keep up to 16 favorites and export them with
 pad-oriented names such as `A01_DHKICK.WAV`.
 
+Use **Export web kit** when your favorites include at least one kick, snare,
+hat, and percussion sound. It writes a Pattern Library-ready `manifest.json`
+and role-labelled WAVs, including round-robin arrays when you keep several
+sounds for the same role.
+
 Five musical controls provide consistent direction across sound families:
 
 - **Weight** adjusts body, level, and low-frequency emphasis.

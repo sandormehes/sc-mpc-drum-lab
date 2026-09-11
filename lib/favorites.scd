@@ -127,6 +127,82 @@
     candidate;
 };
 
+// Export a small, browser-ready kit for Drum Pattern Library. This is kept
+// separate from MPC export because web playback needs role names rather than
+// pad assignments. Several favorites in one role become a round-robin array.
+~drumLabWebRoleForFavorite = { |favorite|
+    var category;
+    category = ~generatorSpecs[favorite[\job][\family]][\category];
+    switch(category,
+        \kick, { \kick },
+        \snare, { \snare },
+        \rim, { \snare },
+        \hat, { \hat },
+        \shaker, { \hat },
+        { \perc }
+    );
+};
+
+~exportDrumLabWebKit = { |favorites, kitName|
+    var baseName, candidate, counter, groups, manifest, outputRoot;
+    var requiredRoles, samples;
+    if(favorites.isNil or: { favorites.isEmpty }) {
+        Error("There are no favorite previews to export.").throw;
+    };
+    groups = (kick: List.new, snare: List.new, hat: List.new, perc: List.new);
+    favorites.do { |favorite|
+        var role;
+        if(~drumLabFavoriteSourceAvailable.(favorite).not) {
+            Error("A favorite source file is unavailable. Rebuild it first.").throw;
+        };
+        role = ~drumLabWebRoleForFavorite.(favorite);
+        groups[role].add(favorite);
+    };
+    requiredRoles = [\kick, \snare, \hat, \perc];
+    requiredRoles.do { |role|
+        if(groups[role].isEmpty) {
+            Error("Web kit needs at least one " ++ role ++ " favorite.").throw;
+        };
+    };
+    outputRoot = ~runtimeConfig[\outputDirectory] ? ~config[\outputDirectory];
+    baseName = Date.getDate.asSortableString ++ "_web-kit";
+    candidate = outputRoot +/+ baseName;
+    counter = 2;
+    while({ File.exists(candidate) }, {
+        candidate = outputRoot +/+ (baseName ++ "_" ++ counter);
+        counter = counter + 1;
+    });
+    File.mkdir(candidate);
+    samples = IdentityDictionary.new;
+    requiredRoles.do { |role|
+        var names;
+        names = groups[role].collect { |favorite, index|
+            var filename;
+            filename = role.asString.toUpper ++ "_"
+                ++ ~zeroPadNumber.(index + 1, 2) ++ ".WAV";
+            File.copy(favorite[\outputPath], candidate +/+ filename);
+            if(File.exists(candidate +/+ filename).not) {
+                Error("Could not export web-kit sample: " ++ filename).throw;
+            };
+            filename;
+        };
+        samples[role] = if(names.size == 1) { names[0] } { names.asArray };
+    };
+    manifest = File(candidate +/+ "manifest.json", "w");
+    if(manifest.isOpen.not) { Error("Cannot create web-kit manifest.").throw };
+    protect {
+        manifest.write("{\n  \"name\": " ++ ~encodeDrumLabJson.(kitName ? "Drum Lab kit")
+            ++ ",\n  \"samples\": {\n");
+        requiredRoles.do { |role, index|
+            manifest.write("    \"" ++ role.asString ++ "\": "
+                ++ ~encodeDrumLabJson.(samples[role])
+                ++ if(index < (requiredRoles.size - 1)) { "," } { "" } ++ "\n");
+        };
+        manifest.write("  }\n}\n");
+    } { manifest.close };
+    candidate;
+};
+
 ~drumLabFavoriteSourceAvailable = { |favorite|
     favorite.notNil
         and: { favorite[\outputPath].notNil }

@@ -670,7 +670,7 @@
     var kitBuilderButton, listener, loadSessionButton, macroSliders, openButton;
     var previewCounter, previewRequested, renderFavoritesButton;
     var profileMenu, profileNames, profileSymbols, progress, randomizeButton;
-    var replayRecipeButton, saveSessionButton, seedBox, setBusy;
+    var replayRecipeButton, saveSessionButton, seedBox, setBusy, webExportButton;
     var setFavoriteButtons, setStatus, statusText, window;
 
     if(~drumLabWindow.notNil) {
@@ -757,6 +757,9 @@
             replayRecipeButton.enabled = busy.not;
             renderFavoritesButton.enabled = busy.not
                 and: { favorites.notEmpty };
+            if(webExportButton.notNil) {
+                webExportButton.enabled = busy.not and: { favorites.notEmpty };
+            };
             kitBuilderButton.enabled = busy.not;
             familyRows.values.do { |row|
                 row[\enabled].enabled = busy.not;
@@ -775,6 +778,7 @@
             keepButton.states = [["Keep preview ("
                 ++ favorites.size ++ "/16)"]];
             exportButton.enabled = favorites.notEmpty;
+            if(webExportButton.notNil) { webExportButton.enabled = favorites.notEmpty };
             if(renderFavoritesButton.notNil) {
                 renderFavoritesButton.enabled = favorites.notEmpty
                     and: { ~generationRunning != true };
@@ -1004,11 +1008,16 @@
             };
         });
 
-    Button(window, Rect(615, 662, 125, 34))
-        .states_([["Help"]])
+    webExportButton = Button(window, Rect(615, 662, 125, 34))
+        .states_([["Export web kit"]])
+        .enabled_(false)
         .action_({
-            ~help.();
-            setStatus.("Command reference printed in the Post window.");
+            try {
+                var path;
+                path = ~exportDrumLabWebKit.(favorites, "Drum Lab web kit");
+                setStatus.("Web kit exported to " ++ path);
+                path.openOS;
+            } { |error| setStatus.(error.errorString) };
         });
 
     keepButton = Button(window, Rect(20, 714, 180, 34))

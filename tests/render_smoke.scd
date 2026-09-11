@@ -18,7 +18,7 @@ try {
     ~config[\activeProfile] = \thickClub;
     ~config[\samplesPerEngine] = 1;
     ~config[\maxConcurrentRenders] = 2;
-    ~start.([\gqomTom, \dancehallRim, \grimeHat, \dancehallShaker]);
+    ~start.([\gqomTom, \dancehallRim, \grimeHat, \dancehallShaker, \sonarPing]);
     // Active validation must use the run snapshot, not compatibility globals.
     ~runtimeConfig[\maximumTailPeak] = -1;
 
@@ -59,7 +59,7 @@ try {
 
         passed = ~generationState.notNil
             and: { ~generationState[\failures].isEmpty }
-            and: { ~generationState[\completed] == 4 }
+            and: { ~generationState[\completed] == 5 }
             and: {
                 File.exists(~currentRunDirectory +/+ "GQTOM_001.wav")
             }
@@ -72,11 +72,14 @@ try {
             and: {
                 File.exists(~currentRunDirectory +/+ "DHSHAKE_001.wav")
             }
+            and: {
+                File.exists(~currentRunDirectory +/+ "SONAR_001.wav")
+            }
             and: { recipe[\kind] == \pack }
             and: { recipe[\schemaVersion] == ~drumLabRecipeSchemaVersion }
             and: { recipe[\options][\kitBalanceMode] == \rms }
             and: { manifestText.contains("kitBalance") }
-            and: { replayJobs.size == 4 }
+            and: { replayJobs.size == 5 }
             and: {
                 File.exists(exportDirectory +/+ "A01_GQTOM.WAV")
             }
