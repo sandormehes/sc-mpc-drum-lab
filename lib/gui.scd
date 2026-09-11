@@ -2,6 +2,18 @@
 // previews, and generation progress.
 
 (
+~resetDrumLabPreviewServer = {
+    if(~drumLabPreviewBuffer.notNil) {
+        ~drumLabPreviewBuffer.free;
+        ~drumLabPreviewBuffer = nil;
+    };
+    if(~drumLabPreviewServer.notNil) {
+        try { ~drumLabPreviewServer.quit } { };
+        ~drumLabPreviewServer = nil;
+    };
+    "Preview audio reset. The next Preview will start a fresh server.".postln;
+};
+
 ~playRenderedFile = { |path|
     var playBuffer, server;
     if(path.isNil or: { File.exists(path).not }) {
@@ -1188,6 +1200,12 @@
                 { |error| setStatus.(error.errorString) };
             };
         });
+    Button(window, Rect(440, 818, 180, 26))
+        .states_([["Restart preview audio"]])
+        .action_({
+            ~resetDrumLabPreviewServer.();
+            setStatus.("Preview audio reset; try Preview again.");
+        });
 
     listener = { |event, data|
         {
@@ -1238,10 +1256,7 @@
 
     window.onClose = {
         ~removeGenerationListener.(listener);
-        if(~drumLabPreviewBuffer.notNil) {
-            ~drumLabPreviewBuffer.free;
-            ~drumLabPreviewBuffer = nil;
-        };
+        ~resetDrumLabPreviewServer.();
         if(~drumLabPreviewServer.notNil
             and: { ~drumLabPreviewServer.serverRunning }) {
             ~drumLabPreviewServer.quit;
