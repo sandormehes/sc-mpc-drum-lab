@@ -388,6 +388,12 @@ try {
     assertThrows.({
         ~kitTemplateOptions.(\notAKit);
     }, "unknown kit templates should be rejected safely");
+    assertThrows.({
+        ~registerDrumLabKitTemplate.(\duplicateFamilyTest, (
+            families: [\dancehallKick, \dancehallKick],
+            engineCounts: (dancehallKick: 8)
+        ));
+    }, "kit templates should reject duplicate families");
     assert.(
         ~macroSnapshotOptions.(\wornTape)[\macros][\dirt] == 0.82,
         "macro snapshots should expose stable reusable directions"

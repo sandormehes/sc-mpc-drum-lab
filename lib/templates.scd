@@ -15,6 +15,9 @@
         or: { counts.isKindOf(Dictionary).not }) {
         Error("Kit template needs ordered families and engine counts.").throw;
     };
+    if(families.asSet.size != families.size) {
+        Error("Kit template " ++ name ++ " cannot repeat a family.").throw;
+    };
     if(families.sum { |family| counts[family] ? 0 } != 16) {
         Error("Kit template " ++ name ++ " must contain exactly 16 pads.").throw;
     };
