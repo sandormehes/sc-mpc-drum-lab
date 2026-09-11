@@ -22,3 +22,29 @@ jobs:
         run: xvfb-run --auto-servernum sclang tests/smoke.scd
       - name: Render and validate one sample
         run: xvfb-run --auto-servernum sclang tests/render_smoke.scd
+
+  pattern-library-contract:
+    name: Pattern Library kit contract
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Drum Lab
+        uses: actions/checkout@v7
+      - name: Check out Pattern Library
+        uses: actions/checkout@v7
+        with:
+          repository: sandormehes/drum-pattern-library
+          path: pattern-library
+      - name: Validate the published-kit manifest contract
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFile, stat } from 'node:fs/promises'
+          import path from 'node:path'
+          const root = 'pattern-library/supplemental-ui/audio/drumlab-kit'
+          const manifest = JSON.parse(await readFile(path.join(root, 'manifest.json'), 'utf8'))
+          for (const role of ['kick', 'snare', 'hat', 'perc']) {
+            const files = Array.isArray(manifest.samples?.[role]) ? manifest.samples[role] : [manifest.samples?.[role]]
+            if (!files.length || files.some((file) => typeof file !== 'string')) throw new Error(`Missing ${role} role`)
+            for (const file of files) await stat(path.join(root, file))
+          }
+          console.log(`Verified ${manifest.name} against the Drum Lab web-kit contract.`)
+          NODE
